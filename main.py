@@ -3,14 +3,14 @@ import sys
 import os
 
 
-from PySide2.QtWidgets import QApplication, QWidget
+from PySide2.QtWidgets import QApplication, QMainWindow
 from PySide2.QtCore import QFile
 from PySide2.QtUiTools import QUiLoader
 
 
-class MainWidget(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
-        super(MainWidget, self).__init__()
+        super(MainWindow, self).__init__()
         self.load_ui()
 
     def load_ui(self):
@@ -18,11 +18,10 @@ class MainWidget(QWidget):
         path = os.path.join(os.path.dirname(__file__), "form.ui")
         ui_file = QFile(path)
         ui_file.open(QFile.ReadOnly)
-        loader.load(ui_file, self)
+        loader.load(ui_file, self).show()
         ui_file.close()
 
 if __name__ == "__main__":
     app = QApplication([])
-    widget = MainWidget()
-    widget.show()
+    widget = MainWindow()
     sys.exit(app.exec_())
