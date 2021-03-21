@@ -1095,7 +1095,7 @@ border: 0;</string>
              <item row="0" column="0">
               <widget class="QLabel" name="label">
                <property name="text">
-                <string>By Finn Eggers (Koivisto) and Aryan Parekh (Bit-Genie) </string>
+                <string>By Finn Eggers (Koivisto), Kim Kahre (Koivisto) and Aryan Parekh (Bit-Genie) </string>
                </property>
               </widget>
              </item>

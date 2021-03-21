@@ -31,6 +31,9 @@ class MainWindow(QMainWindow):
         self.statusBar.setStyleSheet("background-color:#272935;")
         self.title_frame.setMouseTracking(True)
 
+    def setup_central_widgets(self):
+        pass
+
     def menu_buttons(self, event):
         if event == 'maximise':
             if self.isMaximized():
