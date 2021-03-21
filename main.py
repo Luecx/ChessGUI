@@ -1,23 +1,24 @@
 # This Python file uses the following encoding: utf-8
 import sys
 import os
-
+import res
+import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5 import uic
-
-import res
-import time
+from analyse import *
+from engineconfig import *
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.load_ui()
+        self.setup_central_widgets()
 
     def load_ui(self):
-        path = os.path.join(os.path.dirname(__file__), "form.ui")
+        path = os.path.join(os.path.dirname(__file__), "main_form.ui")
         uic.loadUi(path, self)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.menuopen_button.clicked.connect(lambda x: self.menu_animation(x))
@@ -30,10 +31,26 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.statusBar)
         self.statusBar.setStyleSheet("background-color:#272935;")
         self.title_frame.setMouseTracking(True)
-
     def setup_central_widgets(self):
-        pass
 
+        # it is not possible to create an empty stack inside the ui file so we need to delete those two child widgets first
+        self.analyse_widget.deleteLater()
+        self.analyse_widget = None
+        self.engineconfig_widget.deleteLater()
+        self.engineconfig_widget = None
+
+        # recreating the relevant widgets (add new widgets below)
+        self.analyse_widget = analyse()
+        self.engineconfig_widget = engineconfig()
+
+        # adding them to the stack
+        self.content_stack.addWidget(self.analyse_widget)
+        self.content_stack.addWidget(self.engineconfig_widget)
+
+        # binding the buttons
+        self.analyse_button.clicked.connect(lambda x:self.content_stack.setCurrentIndex(0))
+        self.engineconfig_button.clicked.connect(lambda x:self.content_stack.setCurrentIndex(1))
+        pass
     def menu_buttons(self, event):
         if event == 'maximise':
             if self.isMaximized():
@@ -67,11 +84,6 @@ class MainWindow(QMainWindow):
                 elif event.type() == 2:
                     # init root position
                     self.drag_root_position = self.title_frame.mapToGlobal(event.pos()) - self.pos()
-
-#        elif event.type() == 129:
-#            if abs(event.x() - self.width()) < 3:
-#                print(time.time())
-
         return QMainWindow.eventFilter(self, source, event)
 
 if __name__ == "__main__":

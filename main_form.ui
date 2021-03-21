@@ -1048,7 +1048,7 @@ border: 0;</string>
            <number>0</number>
           </property>
           <item>
-           <widget class="QStackedWidget" name="stackedWidget">
+           <widget class="QStackedWidget" name="content_stack">
             <widget class="QWidget" name="analyse_widget"/>
             <widget class="QWidget" name="engineconfig_widget"/>
            </widget>
