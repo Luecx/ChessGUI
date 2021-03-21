@@ -458,6 +458,14 @@
     </disabled>
    </palette>
   </property>
+  <property name="font">
+   <font>
+    <family>Segoe UI</family>
+    <pointsize>10</pointsize>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -471,9 +479,19 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="font">
+    <font>
+     <family>Segoe UI</family>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
    <property name="styleSheet">
     <string notr="true">color: rgb(210, 210, 210);
-border: 0;</string>
+border: 0;
+
+</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
@@ -869,6 +887,9 @@ border: 0;</string>
            <height>16777215</height>
           </size>
          </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
          <property name="styleSheet">
           <string notr="true">QFrame{background-color: rgb(27, 29, 35);}
 
@@ -879,6 +900,9 @@ QPushButton{
     padding: 0 0 0 23px;
     text-align: left;
     background-size: 700px 400px;
+	font-family: &quot;Segeo UI&quot;;
+    font-weight: bold;
+	font-size: 10;
 }
 
 QPushButton:hover {
@@ -887,13 +911,20 @@ QPushButton:hover {
 QPushButton:pressed {	
 	background-color: rgb(85, 170, 255);
 }
-</string>
+
+QPushButton:checked{
+	border-right: 5px solid;
+    border-color: rgb(40, 44, 52);;
+}</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>0</number>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="spacing">
@@ -912,15 +943,41 @@ QPushButton:pressed {
            <number>0</number>
           </property>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="analyse_button">
+            <property name="text">
+             <string>        Analyse</string>
+            </property>
+            <property name="icon">
+             <iconset resource="res.qrc">
+              <normaloff>:/icon_24x24/icons/24x24/cil-3d.png</normaloff>:/icon_24x24/icons/24x24/cil-3d.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="engineconfig_button">
             <property name="styleSheet">
              <string notr="true"/>
             </property>
             <property name="text">
-             <string>          Engine Configuration</string>
+             <string>        Engine Configuration</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="res.qrc">
               <normaloff>:/icon_24x24/icons/24x24/cil-settings.png</normaloff>:/icon_24x24/icons/24x24/cil-settings.png</iconset>
             </property>
             <property name="iconSize">
@@ -929,7 +986,26 @@ QPushButton:pressed {
               <height>24</height>
              </size>
             </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -963,6 +1039,8 @@ border: 0;</string>
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>
