@@ -4,24 +4,11 @@ import os
 
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
-from PyQt5.QtCore import QPropertyAnimation, Qt
+from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5 import uic
 
 import res
 
-class TitleFrame(QWidget):
-    def mousePressEvent(self, event):
-
-        if event.buttons() == Qt.RightButton:
-            self.dragPos = event.globalPos()
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-
-        if event.buttons() == Qt.RightButton:
-            self.move(self.pos() + event.globalPos() - self.dragPos)
-            self.dragPos = event.globalPos()
-            event.accept()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -36,12 +23,9 @@ class MainWindow(QMainWindow):
         self.minimise_button.clicked.connect(lambda x:self.menu_buttons('minimise'))
         self.maximise_button.clicked.connect(lambda x:self.menu_buttons('maximise'))
         self.close_button.clicked.connect(lambda x:self.menu_buttons('close'))
-
-        self.title_frame.mouseMoveEvent = lambda x: self.window_move_event(x)
+        self.title_frame.installEventFilter(self)
+        self.installEventFilter(self)
         self.title_frame.setMouseTracking(True)
-#        self.title_frame.setMouseTracking(True)
-#        self.mouse_tracker = MouseTracker(self.window.title_frame)
-#        self.mouse_tracker.positionChanged.connect(self.window_move_event)
 
     def menu_buttons(self, event):
         if event == 'maximise':
@@ -56,7 +40,7 @@ class MainWindow(QMainWindow):
 
     def menu_animation(self, mode):
         self.open_menu_anim = QPropertyAnimation(self.menu_frame, b"minimumWidth")
-        self.open_menu_anim.setDuration(200)
+        self.open_menu_anim.setDuration(300)
         if mode:
             self.open_menu_anim.setEndValue(230)
         else:
@@ -64,20 +48,20 @@ class MainWindow(QMainWindow):
 
         self.open_menu_anim.start()
 
-    def window_move_event(self, event):
-        if not hasattr(self, 'old_position'):
-            self.old_position = event.pos()
-            print(self.old_position)
-            return
-        print(event)
-#        print(event.type)
-#        print(event.pos())
-#        self.window.move(self.pos() + event)
-#        self.move(self.pos() + event)
-#        event.accept()
+    def eventFilter(self, source, event):
+        if source == self.title_frame:
+            # check if lmb is pressed
+            if app.mouseButtons() & Qt.LeftButton:
+                # check if the mouse is moving
+                if event.type() == QEvent.MouseMove:
+                    if self.isMaximized():
+                        self.showNormal()
+                    self.move(event.pos() + self.title_frame.mapToGlobal(self.title_frame.pos()) - self.drag_root_position)
+                elif event.type() == 2:
+                    # init root position
+                    self.drag_root_position = self.title_frame.mapToGlobal(event.pos()) - self.pos()
 
-
-
+        return QMainWindow.eventFilter(self, source, event)
 
 if __name__ == "__main__":
     app = QApplication([])
