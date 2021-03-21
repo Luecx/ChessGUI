@@ -3,11 +3,12 @@ import sys
 import os
 
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5 import uic
 
 import res
+import time
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +26,9 @@ class MainWindow(QMainWindow):
         self.close_button.clicked.connect(lambda x:self.menu_buttons('close'))
         self.title_frame.installEventFilter(self)
         self.installEventFilter(self)
+        self.statusBar = QStatusBar()
+        self.setStatusBar(self.statusBar)
+        self.statusBar.setStyleSheet("background-color:#272935;")
         self.title_frame.setMouseTracking(True)
 
     def menu_buttons(self, event):
@@ -60,6 +64,10 @@ class MainWindow(QMainWindow):
                 elif event.type() == 2:
                     # init root position
                     self.drag_root_position = self.title_frame.mapToGlobal(event.pos()) - self.pos()
+
+#        elif event.type() == 129:
+#            if abs(event.x() - self.width()) < 3:
+#                print(time.time())
 
         return QMainWindow.eventFilter(self, source, event)
 
