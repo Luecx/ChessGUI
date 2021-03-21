@@ -876,7 +876,7 @@ QPushButton{
     height: 40px;
     width: 100%;
     border: 0;
-    padding: 0 0 0 70px;
+    padding: 0 0 0 23px;
     text-align: left;
     background-size: 700px 400px;
 }
@@ -917,11 +917,17 @@ QPushButton:pressed {
              <string notr="true"/>
             </property>
             <property name="text">
-             <string>test</string>
+             <string>          Engine Configuration</string>
             </property>
             <property name="icon">
-             <iconset resource="res.qrc">
+             <iconset>
               <normaloff>:/icon_24x24/icons/24x24/cil-settings.png</normaloff>:/icon_24x24/icons/24x24/cil-settings.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -957,8 +963,6 @@ border: 0;</string>
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="res.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

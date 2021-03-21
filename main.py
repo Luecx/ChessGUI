@@ -7,6 +7,8 @@ from PySide2.QtWidgets import QApplication, QMainWindow
 from PySide2.QtCore import QPropertyAnimation, QFile
 from PySide2.QtUiTools import QUiLoader
 
+import res
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
