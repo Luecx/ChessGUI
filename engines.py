@@ -70,11 +70,13 @@ class Engine:
             kwargs = kwargs['args']
 
         self.settings = kwargs
-        self.settings['options'] = {}
         self.information = {'name': '', 'author': ''}
         self.search_result = []
         self.is_running = False
         self.is_searching = False
+
+        if 'options' not in self.settings:
+            self.settings['options'] = {}
 
     def create_dict(self):
         return self.settings
@@ -176,6 +178,8 @@ class Engine:
 
         self.send_line("uci" if self.settings['proto'] is Protocol.UCI else 'uci')
 
+        new_options = {}
+
         while True:
             try:
                 line = self.queue.get_nowait()
@@ -220,8 +224,21 @@ class Engine:
                                 break
                             vals += [split[i]]
                         option['vals'] = vals
-                self.settings['options'][name] = option
 
+                # make sure to still use the correct value
+                if name in self.settings['options']:
+                    if 'value' in self.settings['options'][name]:
+                        option['value'] = self.settings['options'][name]['value']
+                    else:
+                        option['value'] = option['default']
+                else:
+                    option['value'] = option['default']
+
+                # place in new options list
+                new_options[name] = option
+
+        # use new options list
+        self.settings['options'] = new_options
 
 class Engines:
     def __init__(self):
@@ -254,11 +271,5 @@ if __name__ == '__main__':
     # xml = dicttoxml(array, custom_root='test', attr_type=False)
 
     eng = Engines()
-    eng.engines['Koivisto'] = Engine(proto=Protocol.UCI,
-                                     bin='F:\\OneDrive\\ProgrammSpeicher\\CLionProjects\\Koivisto\\cmake-build-release\\Koivisto.exe')
-    eng.engines['Koivisto'].start()
-    # eng.engines['Koivisto'].search("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    eng.engines['Koivisto'].exit()
-    print(eng.engines['Koivisto'].information)
-    print(eng.engines['Koivisto'].settings)
-    eng.write_xml("engines.xml")
+    eng.read_xml("engines.xml")
+    print(eng.engines['Koivisto'].settings['options'])

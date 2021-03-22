@@ -6,6 +6,7 @@ import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
+from PyQt5.QtGui import QCursor
 from PyQt5 import uic
 from analysewidget import *
 from engineconfigwidget import *
@@ -56,6 +57,7 @@ class MainWindow(QMainWindow):
 
     def menu_buttons(self, event):
         if event == 'maximise':
+            self.previousWidth = self.width()
             if self.isMaximized():
                 self.showNormal()
             else:
@@ -81,12 +83,29 @@ class MainWindow(QMainWindow):
             if app.mouseButtons() & Qt.LeftButton:
                 # check if the mouse is moving
                 if event.type() == QEvent.MouseMove:
+                    if self.ignore_movement:
+                        return QMainWindow.eventFilter(self, source, event)
                     if self.isMaximized():
+                        max_width       = self.width()
+                        cursor_position = QCursor.pos().x()
                         self.showNormal()
-                    self.move(event.pos() + self.title_frame.mapToGlobal(self.title_frame.pos()) - self.drag_root_position)
+                        new_width       = self.previousWidth
+                        new_x           = cursor_position - new_width // 2
+                        new_x           = max(+70,new_x)
+                        new_x           = min(new_x, max_width - new_width + 70)
+                        self.drag_root_position.setX(cursor_position - new_x)
+                        self.move(new_x,0)
+                    else:
+                        if QCursor.pos().y() < 3:
+                            self.menu_buttons('maximise')
+                            self.ignore_movement = True
+                        else:
+                            self.move(event.pos() + self.title_frame.mapToGlobal(self.title_frame.pos()) - self.drag_root_position)
                 elif event.type() == 2:
                     # init root position
                     self.drag_root_position = self.title_frame.mapToGlobal(event.pos()) - self.pos()
+            else:
+                self.ignore_movement = False
         return QMainWindow.eventFilter(self, source, event)
 
 if __name__ == "__main__":

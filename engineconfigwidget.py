@@ -3,18 +3,21 @@ import os
 import res
 import time
 import math
+import psutil
 
 from engines import Engines, Protocol
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar, QHBoxLayout, QSlider, QLabel, QLineEdit, \
-    QPushButton, QFileDialog
+    QPushButton, QFileDialog, QSpacerItem, QSizePolicy
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5 import uic
 
 
 class SpinOptionWidget(QWidget):
-    def __init__(self, min=0, max=100, default=50, logarithmic=False, log_base=2):
+    def __init__(self, name, listener, init, min=0, max=100, default=50, logarithmic=False, log_base=2):
         super(QWidget, self).__init__()
         hbox = QHBoxLayout()
+        self.listener = listener
+        self.name     = name
 
         self.default = default
         self.min = min
@@ -23,34 +26,43 @@ class SpinOptionWidget(QWidget):
         self.log_base = log_base
         self.log_factor = 100.0 / math.log(max - min + 1, log_base)
 
+        self.name_label = QLabel(name,self)
+        self.name_label.setMaximumWidth(100)
+        self.name_label.setMinimumWidth(100)
+
         self.slider = QSlider(Qt.Horizontal,self)
         self.slider.setRange(min if not self.logarithmic else 0,max if not self.logarithmic else 100)
         self.slider.setFocusPolicy(Qt.NoFocus)
         self.slider.setPageStep(5)
-        self.slider.valueChanged.connect(self.change_value if not self.logarithmic else lambda x:self.change_value(self.value_from_range(x)))
+        self.slider.valueChanged.connect(self._change_value if not self.logarithmic else lambda x:self._change_value(self._value_from_range(x)))
 
         self.label = QLineEdit('0', self)
         self.label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.label.setMaximumWidth(80)
-        self.label.editingFinished.connect(lambda:self.change_value(str(self.label.text())))
+        self.label.editingFinished.connect(lambda:self._change_value(str(self.label.text())))
 
+        hbox.addWidget(self.name_label)
         hbox.addWidget(self.slider)
-        hbox.addSpacing(15)
         hbox.addWidget(self.label)
+        hbox.addSpacing(15)
 
         self.setLayout(hbox)
+        self._change_value(init)
 
-    def value_from_range(self, range):
+    def reset(self):
+        self._change_value(self.default)
+
+    def _value_from_range(self, range):
         if not self.logarithmic:
             return range
         return round(math.pow(self.log_base, range / self.log_factor)+self.min-1)
 
-    def range_from_value(self, value):
+    def _range_from_value(self, value):
         if not self.logarithmic:
             return value
         return round(self.log_factor * math.log(value - self.min + 1, self.log_base))
 
-    def change_value(self, value):
+    def _change_value(self, value):
         if value == '':
             value = self.default
         try:
@@ -60,45 +72,82 @@ class SpinOptionWidget(QWidget):
         value = min(self.max, value)
         value = max(self.min, value)
 
-        self.slider.setValue(self.range_from_value(int(value)))
+        self.slider.setValue(self._range_from_value(int(value)))
         self.label.setText(str(value))
+        self.listener(self.name, int(value))
 
 class StringOptionWidget(QWidget):
-    def __init__(self, default=''):
+    def __init__(self, name, listener, init, default=''):
         super(QWidget, self).__init__()
         hbox = QHBoxLayout()
+        self.listener = listener
+        self.name     = name
+        self.default  = default
+
+        self.name_label = QLabel(name,self)
+        self.name_label.setMaximumWidth(100)
+        self.name_label.setMinimumWidth(100)
 
         entry = QLineEdit(self)
         entry.setText(default)
-        entry.textChanged.connect(self.change_value)
+        entry.textChanged.connect(self._change_value)
+        hbox.addWidget(self.name_label)
         hbox.addWidget(entry)
 
         self.setLayout(hbox)
+        self._change_value(init)
 
-    def change_value(self, value):
-        pass
-        #self.label.setText(str(value))
+    def reset(self):
+        self._change_value(self.default)
+
+    def _change_value(self, value):
+        self.label.setText(str(value))
+        self.listener(self.name, str(value))
 
 class PathOptionWidget(QWidget):
-    def __init__(self, default=''):
+    def __init__(self, name, listener,init, default=''):
         super(QWidget, self).__init__()
         hbox = QHBoxLayout()
+        self.listener = listener
+        self.name     = name
+        self.default  = default
 
-        entry = QLineEdit(self)
-        entry.setText(default)
-        entry.textChanged.connect(self.change_value)
+        self.name_label = QLabel(name,self)
+        self.name_label.setMaximumWidth(100)
+        self.name_label.setMinimumWidth(100)
+
+        self.entry = QLineEdit(self)
+        self.entry.setText(default)
+        self.entry.textChanged.connect(self._change_value)
         self.btn = QPushButton('Browse', self)
         self.btn.setMinimumWidth(80)
+        self.btn.clicked.connect(lambda x:self._open_file_dialog())
 
-        hbox.addWidget(entry)
+        hbox.addWidget(self.name_label)
+        hbox.addWidget(self.entry)
         hbox.addSpacing(15)
         hbox.addWidget(self.btn)
 
         self.setLayout(hbox)
+        self._change_value(init)
 
-    def change_value(self, value):
-        pass
-        #self.label.setText(str(value))
+    def reset(self):
+        self._change_value(self.default)
+
+    def _open_file_dialog(self):
+        dlg = QFileDialog(self)
+        if 'Path' in self.name:
+            dlg.setFileMode(QFileDialog.Directory)
+        if 'File' in self.name:
+            dlg.setFileMode(QFileDialog.ExistingFile)
+        if dlg.exec_():
+            filenames = dlg.selectedFiles()
+            if len(filenames) == 1:
+                self._change_value(filenames[0])
+
+    def _change_value(self, value):
+        self.entry.setText(str(value))
+        self.listener(self.name, value)
 
 class EngineConfigWidget(QWidget):
     def __init__(self):
@@ -113,8 +162,6 @@ class EngineConfigWidget(QWidget):
     def load_ui(self):
         path = os.path.join(os.path.dirname(__file__), "engineconfigwidget_form.ui")
         uic.loadUi(path, self)
-        for i in range(20):
-            self.verticalLayout_7.addWidget(SpinOptionWidget(logarithmic=True))
 
         # load the engine names into the combo box
         for key in self.engines.engines:
@@ -134,11 +181,19 @@ class EngineConfigWidget(QWidget):
         self._update_option_widgets()
 
         # bind a reload of the current options which detects changes
-        self.loadoption_button.clicked.connect(lambda x:self._detect_engine_options())
+        self. loadoption_button.clicked.connect(lambda x:self._detect_engine_options())
+        self.resetoption_button.clicked.connect(lambda x:self._reset_options())
+
+    def update_option(self, key, value):
+        if self.selected_engine() in self.engines.engines:
+            self.engines.engines[self.selected_engine()].settings['options'][key]['value'] = value
+        self.engines.write_xml('engines.xml')
+
 
     def _update_proto(self, proto):
         if self.selected_engine() in self.engines.engines:
             self.engines.engines[self.selected_engine()].settings['proto'] = proto
+        self.engines.write_xml('engines.xml')
 
     def _update_exe(self, exe):
         if self.exe_edit.text() != exe:
@@ -146,9 +201,9 @@ class EngineConfigWidget(QWidget):
 
         if self.selected_engine() in self.engines.engines:
             self.engines.engines[self.selected_engine()].settings['bin'] = exe
+        self.engines.write_xml('engines.xml')
 
     def _open_exe_file_dialog(self):
-        pass
         dlg = QFileDialog(self)
         dlg.setFileMode(QFileDialog.AnyFile)
         dlg.setNameFilters(["Executables (*.exe)"])
@@ -160,7 +215,6 @@ class EngineConfigWidget(QWidget):
     def _detect_engine_options(self):
         if self.selected_engine() in self.engines.engines:
             engine = self.engines.engines[self.selected_engine()]
-            print(engine.settings['bin'])
 
             if not engine.start():
                 return
@@ -168,7 +222,9 @@ class EngineConfigWidget(QWidget):
                 engine.exit()
             self._update_option_widgets()
 
-
+    def _reset_options(self):
+        for i in range(self.verticalLayout_7.count()):
+            self.verticalLayout_7.itemAt(i).widget().reset()
 
     def _update_option_widgets(self):
 
@@ -180,11 +236,58 @@ class EngineConfigWidget(QWidget):
         if self.selected_engine() not in self.engines.engines:
             return
 
+        # add all the option widgets
         for option in self.engines.engines[self.selected_engine()].settings['options']:
             info = self.engines.engines[self.selected_engine()].settings['options'][option]
-            print(info)
+            # adding spin widgets
+            # detects if its hash, threads or something else
+            # will check for cpu counts / max memory
+            if info['type'] == 'spin':
+                if 'Hash' in option:
 
+                    widg = SpinOptionWidget(option,
+                                            listener=self.update_option,
+                                            init=int(info['value'] if 'value' in info else int(info['default'])),
+                                            min=int(info['min']),
+                                            max=min(int(info['max']),psutil.virtual_memory().total // 1024 // 1024),
+                                            default=int(info['default']),
+                                            logarithmic=True)
+                elif 'Threads' in option:
+                    widg = SpinOptionWidget(option,
+                                            listener=self.update_option,
+                                            init=int(info['value'] if 'value' in info else int(info['default'])),
+                                            min=int(info['min']),
+                                            max=min(int(info['max']), psutil.cpu_count()),
+                                            default=int(info['default']),
+                                            logarithmic=False)
+                else:
+                    pass
+                    widg = SpinOptionWidget(option,
+                                            listener=self.update_option,
+                                            init=int(info['value'] if 'value' in info else int(info['default'])),
+                                            min=int(info['min']),
+                                            max=int(info['max']),
+                                            default=int(info['default']),
+                                            logarithmic=False)
+                self.verticalLayout_7.addWidget(widg)
 
+            # checks for a string entry
+            # will check for a path. If a path is required, a dialog button will be added
+            if info['type'] == 'string':
 
-
+                # it can happen that the xml outputs None instead of an empty string
+                if info['default'] is None:
+                    info['default'] = ''
+                if info['value'] is None:
+                    info['value'] = ''
+                if 'Path' in option:
+                    self.verticalLayout_7.addWidget(PathOptionWidget(
+                        name=option,
+                        listener=self.update_option,
+                        init=str(info['value'] if 'value' in info else str(info['default']))))
+                else:
+                    self.verticalLayout_7.addWidget(StringOptionWidget(
+                        name=option,
+                        listener=self.update_option,
+                        init=str(info['value'] if 'value' in info else str(info['default']))))
 
