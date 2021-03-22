@@ -7,11 +7,12 @@ import time
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5 import uic
-from analyse import *
-from engineconfig import *
+from analysewidget import *
+from engineconfigwidget import *
 
 
 class MainWindow(QMainWindow):
+
     def __init__(self):
         super(MainWindow, self).__init__()
         self.load_ui()
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.statusBar)
         self.statusBar.setStyleSheet("background-color:#272935;")
         self.title_frame.setMouseTracking(True)
+
     def setup_central_widgets(self):
 
         # it is not possible to create an empty stack inside the ui file so we need to delete those two child widgets first
@@ -40,8 +42,8 @@ class MainWindow(QMainWindow):
         self.engineconfig_widget = None
 
         # recreating the relevant widgets (add new widgets below)
-        self.analyse_widget = analyse()
-        self.engineconfig_widget = engineconfig()
+        self.analyse_widget = AnalyseWidget()
+        self.engineconfig_widget = EngineConfigWidget()
 
         # adding them to the stack
         self.content_stack.addWidget(self.analyse_widget)
@@ -51,6 +53,7 @@ class MainWindow(QMainWindow):
         self.analyse_button.clicked.connect(lambda x:self.content_stack.setCurrentIndex(0))
         self.engineconfig_button.clicked.connect(lambda x:self.content_stack.setCurrentIndex(1))
         pass
+
     def menu_buttons(self, event):
         if event == 'maximise':
             if self.isMaximized():
@@ -87,6 +90,7 @@ class MainWindow(QMainWindow):
         return QMainWindow.eventFilter(self, source, event)
 
 if __name__ == "__main__":
+
     app = QApplication([])
     widget = MainWindow()
     widget.show()

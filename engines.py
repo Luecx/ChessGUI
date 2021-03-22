@@ -1,0 +1,264 @@
+import subprocess
+import time
+from enum import Enum, IntEnum
+from queue import Queue, Empty
+from threading import Thread
+
+from xml.etree import cElementTree as ElementTree
+from dicttoxml import dicttoxml
+from xml.dom.minidom import parseString
+
+
+class XmlListConfig(list):
+    def __init__(self, aList):
+        for element in aList:
+            if element:
+                # treat like dict
+                if len(element) == 1 or element[0].tag != element[1].tag:
+                    self.append(XmlDictConfig(element))
+                # treat like list
+                elif element[0].tag == element[1].tag:
+                    self.append(XmlListConfig(element))
+            elif element.text:
+                text = element.text.strip()
+                if text:
+                    self.append(text)
+
+
+class XmlDictConfig(dict):
+
+    def __init__(self, parent_element):
+        if parent_element.items():
+            self.update(dict(parent_element.items()))
+        for element in parent_element:
+            if element:
+                # treat like dict - we assume that if the first two tags
+                # in a series are different, then they are all different.
+                if len(element) == 1 or element[0].tag != element[1].tag:
+                    aDict = XmlDictConfig(element)
+                # treat like list - we assume that if the first two tags
+                # in a series are the same, then the rest are the same.
+                else:
+                    # here, we put the list in dictionary; the key is the
+                    # tag name the list elements all share in common, and
+                    # the value is the list itself
+                    aDict = {element[0].tag: XmlListConfig(element)}
+                # if the tag has attributes, add those to the dict
+                if element.items():
+                    aDict.update(dict(element.items()))
+                self.update({element.tag: aDict})
+            # this assumes that if you've got an attribute in a tag,
+            # you won't be having any text. This may or may not be a
+            # good idea -- time will tell. It works for the way we are
+            # currently doing XML configuration files...
+            elif element.items():
+                self.update({element.tag: dict(element.items())})
+            # finally, if there are no child tags and no attributes, extract
+            # the text
+            else:
+                self.update({element.tag: element.text})
+
+
+class Protocol(IntEnum):
+    UCI = 1
+
+
+class Engine:
+
+    def __init__(self, **kwargs):
+        if 'args' in kwargs:
+            kwargs = kwargs['args']
+
+        self.settings = kwargs
+        self.settings['options'] = {}
+        self.information = {'name': '', 'author': ''}
+        self.search_result = []
+        self.is_running = False
+        self.is_searching = False
+
+    def create_dict(self):
+        return self.settings
+
+    def start(self):
+        self._update_state()
+        if self.is_running:
+            return False
+        self.is_running = True
+        self.is_searching = False
+        try:
+            self.process = subprocess.Popen([self.settings['bin']], stdout=subprocess.PIPE, stdin=subprocess.PIPE,
+                                            bufsize=1, encoding="utf8")
+            self.queue = Queue(maxsize=1024)
+            self.thread = Thread(target=self._enqueue_output, args=(self.process.stdout, self.queue))
+            self.thread.daemon = True  # thread dies with the program
+            self.thread.start()
+        except:
+            self.process = None
+            self.is_running = False
+            return False
+        self._retrieve_information()
+        return True
+
+    def send_line(self, line):
+        self._update_state()
+        if not self.is_running:
+            return False
+        self.process.stdin.write(line + "\n")
+        self.process.stdin.flush()
+        return True
+
+    def exit(self):
+        self._update_state()
+        if not self.is_running:
+            return False
+
+        self.stop_search()
+        self.send_line('exit')
+        self.process.terminate()
+        self.is_running = False
+        return True
+
+    def search(self, fen, moves=''):
+        self._update_state()
+        if not self.is_running:
+            return False
+
+        if self.is_searching:
+            self.stop_search()
+
+        if moves:
+            self.send_line(f"position fen {fen} moves {moves}")
+        else:
+            self.send_line(f"position fen {fen}")
+
+        self.send_line(f"go infinite")
+
+    def search_poll(self):
+        self._update_state()
+        if not self.is_searching:
+            return False
+
+        while True:
+            try:
+                line = self.queue.get_nowait()
+            except Empty:
+                break
+            print(line)
+
+        # line = self.read_line()
+        # while 'bestmove' not in line:
+        #     print(line)
+        #     line = self.read_line()
+
+    def stop_search(self):
+        self._update_state()
+        if not self.is_searching:
+            return False
+
+        self.is_searching = False
+        self.send_line("stop")
+
+    def _enqueue_output(self, out, queue):
+        for line in iter(out.readline, b''):
+            queue.put(line)
+        out.close()
+
+    def _update_state(self):
+        if self.is_running:
+            if self.process.poll() is not None:
+                self.is_running = False
+                self.is_searching = False
+
+    def _retrieve_information(self):
+        self._update_state()
+        if not self.is_running:
+            return
+
+        self.send_line("uci" if self.settings['proto'] is Protocol.UCI else '')
+
+        while True:
+            try:
+                line = self.queue.get_nowait()
+            except Empty:
+                time.sleep(0.01)
+                continue
+            line = line.strip()
+            if 'uciok' in line:
+                break
+            if 'id name' in line:
+                self.information['name'] = line[7:].strip()
+            if 'id author' in line:
+                self.information['author'] = line[9:].strip()
+            if 'option' in line:
+                option = {}
+                split = line.split(' ')
+                if not 'name' in line:
+                    continue
+                name = split[split.index('name') + 1]
+                if 'type' in line:
+                    option['type'] = split[split.index('type') + 1]
+                    if 'min' in line:
+                        option['min'] = int(split[split.index('min') + 1])
+                    if 'max' in line:
+                        option['max'] = int(split[split.index('max') + 1])
+                    if option['type'] == 'string':
+                        if 'default' in line:
+                            try:
+                                option['default'] = str(split[split.index('default') + 1])
+                            except:
+                                option['default'] = ''
+                    else:
+                        if 'default' in line:
+                            try:
+                                option['default'] = int(split[split.index('default') + 1])
+                            except:
+                                option['default'] = ''
+                    if option['type'] == 'combo':
+                        vals = []
+                        for i in range(split.index('var') + 1, len(split)):
+                            if split[i] in ['min', 'max', 'default']:
+                                break
+                            vals += [split[i]]
+                        option['vals'] = vals
+                self.settings['options'][name] = option
+
+
+class Engines:
+    def __init__(self):
+        self.engines = {}
+
+    def read_xml(self, file):
+        self.engines = {}
+
+        tree = ElementTree.parse(file)
+        root = tree.getroot()
+        xmldict = XmlDictConfig(root)
+
+        for key in xmldict:
+            self.engines[dict] = Engine(args=xmldict[key])
+
+    def write_xml(self, file):
+        out_dict = {}
+        for i in self.engines:
+            out_dict[i] = self.engines[i].create_dict()
+        xml = dicttoxml(out_dict, attr_type=False)
+        dom = parseString(xml)
+        f = open(file, "w")
+        f.write(dom.toprettyxml())
+        f.close()
+
+
+if __name__ == '__main__':
+    # e = Engine(proto=Protocol.UCI)
+    # dict = e.create_dict()
+    # xml = dicttoxml(array, custom_root='test', attr_type=False)
+
+    eng = Engines()
+    eng.engines['Koivisto'] = Engine(proto=Protocol.UCI,
+                                     bin='F:\\OneDrive\\ProgrammSpeicher\\CLionProjects\\Koivisto\\cmake-build-release\\Koivisto.exe')
+    eng.engines['Koivisto'].start()
+    eng.engines['Koivisto'].search("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    eng.engines['Koivisto'].exit()
+    print(eng.engines['Koivisto'].information)
+    print(eng.engines['Koivisto'].settings)
+    eng.write_xml("engines.xml")

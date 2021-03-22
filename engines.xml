@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<root>
+	<Koivisto>
+		<proto>Protocol.UCI</proto>
+		<bin>F:\OneDrive\ProgrammSpeicher\CLionProjects\Koivisto\cmake-build-release\Koivisto.exe</bin>
+		<options>
+			<Hash>
+				<type>spin</type>
+				<min>1</min>
+				<max>65536</max>
+				<default>16</default>
+			</Hash>
+			<Threads>
+				<type>spin</type>
+				<min>1</min>
+				<max>256</max>
+				<default>1</default>
+			</Threads>
+			<SyzygyPath>
+				<type>string</type>
+				<default/>
+			</SyzygyPath>
+		</options>
+	</Koivisto>
+</root>

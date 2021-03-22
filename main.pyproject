@@ -1,3 +1,3 @@
 {
-    "files": ["res.py","main_form.ui","main.py","engineconfig_form.ui","analyse.py","analyse_form.ui","styles/style.css","res.qrc","engineconfig.py"]
+    "files": ["main_form.ui","engines.py","engineconfigwidget.py","styles/style.css","main.py","res.py","engineconfigwidget_form.ui","analysewidget_form.ui","analysewidget.py","res.qrc"]
 }
