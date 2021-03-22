@@ -61,7 +61,7 @@ class XmlDictConfig(dict):
 
 class Protocol(IntEnum):
     UCI = 1
-
+    WINBOARD = 2
 
 class Engine:
 
@@ -174,7 +174,7 @@ class Engine:
         if not self.is_running:
             return
 
-        self.send_line("uci" if self.settings['proto'] is Protocol.UCI else '')
+        self.send_line("uci" if self.settings['proto'] is Protocol.UCI else 'uci')
 
         while True:
             try:
@@ -235,7 +235,7 @@ class Engines:
         xmldict = XmlDictConfig(root)
 
         for key in xmldict:
-            self.engines[dict] = Engine(args=xmldict[key])
+            self.engines[key] = Engine(args=xmldict[key])
 
     def write_xml(self, file):
         out_dict = {}
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     eng.engines['Koivisto'] = Engine(proto=Protocol.UCI,
                                      bin='F:\\OneDrive\\ProgrammSpeicher\\CLionProjects\\Koivisto\\cmake-build-release\\Koivisto.exe')
     eng.engines['Koivisto'].start()
-    eng.engines['Koivisto'].search("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    # eng.engines['Koivisto'].search("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     eng.engines['Koivisto'].exit()
     print(eng.engines['Koivisto'].information)
     print(eng.engines['Koivisto'].settings)

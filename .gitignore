@@ -4,4 +4,6 @@ __pycache__/
 
 styles/
 
+.idea/
+
 main.pyproject.user
