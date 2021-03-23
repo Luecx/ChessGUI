@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <root>
 	<NewEngine1>
-		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/bin/Koivisto_4.29-x64-windows.exe</bin>
-		<proto>Protocol.UCI</proto>
+		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/cmake-build-release/Koivisto.exe</bin>
+		<proto>1</proto>
 		<options>
 			<Hash>
 				<type>spin</type>

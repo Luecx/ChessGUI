@@ -21,6 +21,7 @@ class AnalyseWidget(QWidget):
         uic.loadUi(path, self)
 
         self.board_widget = BoardWidget()
+        self.board_widget.listen(lambda x:self._update_search())
 
         self.gridLayout.addWidget(self.board_widget, 0, 0)
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
@@ -35,18 +36,26 @@ class AnalyseWidget(QWidget):
         self.analysetoggle_button.clicked.connect(lambda x: self.start_analysis() if x else self.stop_analysis())
 
     def _current_engine(self):
+        # returns the current engine used
+        # poll the dict of engines
         engines = getMainWindow().getEngineConfigWidget().engines.engines
+
+        # check if the current selected engine is inside engines (this should always be true)
         if self.engine_combo.currentText() in engines:
             return engines[self.engine_combo.currentText()]
         else:
             return None
 
     def _process_engine_line(self, line):
+        # we assume that all engines only follow the uci protocol. This is checked when selecting the engine
 
+        # create a function to fill the label with the correct value
         func = lambda label,split,value: label.setText(split[split.index(value)+1] if value in split else '')
 
+        # split the string
         split = line.split()
-        print(split)
+
+        # write all the labels
         func(self.   nodes_label, split, 'nodes')
         func(self.     nps_label, split, 'nps')
         func(self.   depth_label, split, 'depth')
@@ -54,31 +63,45 @@ class AnalyseWidget(QWidget):
         func(self.    time_label, split, 'time')
         func(self.  tbhits_label, split, 'tbhits')
 
+        # update the score
         if 'mate' in split:
             self._update_score(mate=split[split.index('mate')+1])
         elif 'score' in split:
             self._update_score(mate=split[split.index('score')+2])
 
     def _retrieve_search_fen_and_moves(self):
+        # retrieves the fen and moves which will be given to the engine in the format
+        # setposition fen {fen} moves {moves}
         return self.board_widget.board.fen(), None
 
     def _update_search(self):
+        # update the search if a move has happened or the board state changed
         if self._current_engine() is not None:
             fen,moves=self._retrieve_search_fen_and_moves()
+            # send the search command
             self._current_engine().search(fen,moves)
 
     def _update_score(self, score=None, mate=None):
+        # update the score display
         pass
 
     def stop_analysis(self):
+        # stop the analysis
+        # make sure the toggle button is toggle OFF
         self.analysetoggle_button.setChecked(False)
+
+        # we can select other engines
         self.engine_combo.setEnabled(True)
+
+        # if there is no engine available, no need to exit
         if self._current_engine() is None:
             return
+
+        # exit the current engine. the function checks if the engine is running
         self._current_engine().exit()
-        pass
 
     def start_analysis(self):
+        # cannot start analysis if no engine is selected
         if self._current_engine() is None:
             return
         # listen to the output and wait 0.1 seconds
@@ -86,29 +109,43 @@ class AnalyseWidget(QWidget):
         time.sleep(0.1)
         # try to start the engine
         if self._current_engine().start():
+            # make sure the toggle button is toggle ON
             self.analysetoggle_button.setChecked(True)
+            # make sure we cannot select other engines
             self.engine_combo.setEnabled(False)
-            time.sleep(0.1)
+            # send the options
+            self._current_engine().send_options()
+            # sleep a bit so that the engine can start
+            time.sleep(0.2)
+            # update the search and give the search command on the current position
             self._update_search()
 
     def reload_engines(self):
+        # reloads the engines list from the engineconfigwidget
+
+        # if we have some engines stored, remove those
         while self.engine_combo.count() > 0:
             self.engine_combo.removeItem(0)
 
+        # get the engines from the engine config widget
         engines = getMainWindow().getEngineConfigWidget().engines.engines
+
+        # loop through them
         for key in engines:
-            if engines[key].settings['bin'] != '':
+            # only support uci engines for now
+            if engines[key].settings['bin'] != '' and int(engines[key].settings['proto']) == Protocol.UCI:
+                # add the engine to the list
                 self.engine_combo.addItem(key)
 
+        # enable the start of the analysis if we got atleast 1 engine
         self.analysetoggle_button.setEnabled(self.engine_combo.count() > 0)
 
+        # clear the pvs
         self.pv1_button.setText("")
         self.pv2_button.setText("")
         self.pv3_button.setText("")
         self.pv4_button.setText("")
         self.pv5_button.setText("")
-
-
 
     def resizeEvent(self, e):
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())

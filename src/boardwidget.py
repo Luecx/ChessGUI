@@ -2,24 +2,25 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy
 from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QPixmap
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
-import chess 
+import chess
 
 
 class BoardWidget(QWidget):
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self, *args, **kwargs)
-        self.config()
+        self._config()
 
-    def config(self):
+    def _config(self):
         self.cellSize  = 100
         self.lightCell = QColor(0xecdab9)
         self.darkCell  = QColor(0xae8a68)
         self.board     = chess.Board()
         self.clickedAt = None
-        self.createBoard()
-        self.createPieces()
+        self._create_board()
+        self._create_pieces()
+        self.listener  = None
 
-    def nextColor(self, color):
+    def _next_color(self, color):
         if color == self.darkCell:
             return self.lightCell
         else:
@@ -28,24 +29,24 @@ class BoardWidget(QWidget):
     def resizeEvent(self, e):
         x, y = e.size().height(), e.size().width()
         self.cellSize = min(x, y) // 8
-        self.refreshPieces()
-        self.refreshBoard()
+        self._refresh_pieces()
+        self._refresh_board()
           
-    def getIndex(self, square):
+    def _get_index(self, square):
         return square // 8, square % 8
 
-    def getColorLabel(self, piece):
+    def _get_color_label(self, piece):
         return 'w' if piece.color == chess.WHITE else 'b'
        
-    def piecePath(self, piece):
-        return f'assets//images//{self.getColorLabel(piece) + piece.symbol()}.png'
+    def _piece_path(self, piece):
+        return f'..//assets//images//{self._get_color_label(piece) + piece.symbol()}.png'
 
-    def refreshBoard(self):
+    def _refresh_board(self):
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.resize(self.cellSize * 8, self.cellSize * 8)
 
-    def refreshPieces(self):
+    def _refresh_pieces(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
@@ -54,11 +55,11 @@ class BoardWidget(QWidget):
                 continue
  
 
-            i, j = self.getIndex(chess.square_mirror(square))
+            i, j = self._get_index(chess.square_mirror(square))
 
             self.pieces[square].resize(self.cellSize,self.cellSize)
             self.pieces[square].move(j * self.cellSize, i * self.cellSize)
-            self.pieces[square].setPixmap(QPixmap(self.piecePath(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.pieces[square].setPixmap(QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def mousePressEvent(self, e):
         if e.button() == Qt.LeftButton:
@@ -74,10 +75,18 @@ class BoardWidget(QWidget):
                move = chess.Move(self.clickedAt, square)
                if move in self.board.legal_moves:
                    self.board.push(move)
-                   self.refreshPieces()
+                   self._refresh_pieces()
+                   self.board_state_changed()
                self.clickedAt = None 
-                
-    def createBoard(self):
+
+    def board_state_changed(self):
+        if self.listener is not None:
+            self.listener(self.board.fen())
+
+    def listen(self, func):
+        self.listener = func
+
+    def _create_board(self):
         self.boardLabel  = QLabel(self)
         self.boardPixmap = QPixmap('../assets/images/board.png')
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
@@ -85,12 +94,12 @@ class BoardWidget(QWidget):
         self.boardLabel.move(0, 0)
         self.boardLabel.setStyleSheet("background-color: black;")
 
-    def createPieces(self):
+    def _create_pieces(self):
         self.pieces = []
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
-            i, j = self.getIndex(chess.square_mirror(square))
+            i, j = self._get_index(chess.square_mirror(square))
 
             label = QLabel(self)
             label.move(j * self.cellSize, i * self.cellSize)
