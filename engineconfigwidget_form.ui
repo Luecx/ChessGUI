@@ -597,12 +597,12 @@ font-size: 14px;</string>
                <item>
                 <widget class="QComboBox" name="engine_combo">
                  <property name="editable">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="pushButton">
+                <widget class="QPushButton" name="newengine_button">
                  <property name="minimumSize">
                   <size>
                    <width>70</width>
@@ -621,7 +621,7 @@ font-size: 14px;</string>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="pushButton_3">
+                <widget class="QPushButton" name="delengine_button">
                  <property name="maximumSize">
                   <size>
                    <width>70</width>

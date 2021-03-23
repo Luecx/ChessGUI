@@ -921,8 +921,8 @@ QPushButton:pressed {
 }
 
 QPushButton:checked{
-	border-right: 5px solid;
-    border-color: rgb(40, 44, 52);;
+	border-right: 8px solid;
+    border-color: rgb(44, 49, 60);
 }</string>
          </property>
          <property name="frameShape">

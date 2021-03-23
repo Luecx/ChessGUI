@@ -6,14 +6,63 @@
 		<options>
 			<Hash>
 				<type>spin</type>
-				<min>2</min>
-				<max>3000</max>
-				<default>2</default>
-				<value>38</value>
+				<min>1</min>
+				<max>65536</max>
+				<default>16</default>
+				<value>1175</value>
 			</Hash>
-			<Clear>
-				<type>button</type>
-			</Clear>
+			<Threads>
+				<type>spin</type>
+				<min>1</min>
+				<max>256</max>
+				<default>1</default>
+				<value>9</value>
+			</Threads>
+			<SyzygyPath>
+				<type>string</type>
+				<default/>
+				<value/>
+			</SyzygyPath>
 		</options>
 	</Koivisto>
+	<NewEngine1>
+		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/cmake-build-release/Koivisto2.exe</bin>
+		<proto>Protocol.UCI</proto>
+		<options>
+			<Hash>
+				<type>spin</type>
+				<min>1</min>
+				<max>65536</max>
+				<default>16</default>
+				<value>201</value>
+			</Hash>
+			<Threads>
+				<type>spin</type>
+				<min>1</min>
+				<max>256</max>
+				<default>1</default>
+				<value>7</value>
+			</Threads>
+			<SyzygyPath>
+				<type>string</type>
+				<default/>
+				<value/>
+			</SyzygyPath>
+		</options>
+	</NewEngine1>
+	<NewEngine2>
+		<bin/>
+		<proto>Protocol.UCI</proto>
+		<options/>
+	</NewEngine2>
+	<NewEngine3>
+		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/bin/Koivisto_4.29-x64-windows-native-popcnt.exe</bin>
+		<proto>Protocol.UCI</proto>
+		<options/>
+	</NewEngine3>
+	<Koivisto2>
+		<bin/>
+		<proto>Protocol.UCI</proto>
+		<options/>
+	</Koivisto2>
 </root>

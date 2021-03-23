@@ -5,7 +5,7 @@ import time
 import math
 import psutil
 
-from engines import Engines, Protocol
+from engines import Engines, Protocol, Engine
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar, QHBoxLayout, QSlider, QLabel, QLineEdit, \
     QPushButton, QFileDialog, QSpacerItem, QSizePolicy
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
@@ -154,18 +154,21 @@ class EngineConfigWidget(QWidget):
         super(QWidget, self).__init__()
         self.engines = Engines()
         self.engines.read_xml("engines.xml")
-        self.load_ui()
+        self._load_ui()
 
     def selected_engine(self):
         return self.engine_combo.currentText()
 
-    def load_ui(self):
+    def _load_ui(self):
         path = os.path.join(os.path.dirname(__file__), "engineconfigwidget_form.ui")
         uic.loadUi(path, self)
 
         # load the engine names into the combo box
         for key in self.engines.engines:
             self.engine_combo.addItems([key])
+
+        self.engine_combo.currentIndexChanged.connect(lambda x: self._edit_engine_name(x))
+        self.engine_combo_index = 0 if len(self.engines.engines) > 0 else -1
 
         # bind a change on the protocol
         self.     protouci_radio.clicked.connect(lambda x: self._update_proto(Protocol.UCI))
@@ -184,16 +187,70 @@ class EngineConfigWidget(QWidget):
         self. loadoption_button.clicked.connect(lambda x:self._detect_engine_options())
         self.resetoption_button.clicked.connect(lambda x:self._reset_options())
 
+        # bin the buttons for creating and deleting new engines
+        self.newengine_button.clicked.connect(lambda x: self._add_engine())
+        self.delengine_button.clicked.connect(lambda x: self._del_engine())
+
     def update_option(self, key, value):
         if self.selected_engine() in self.engines.engines:
             self.engines.engines[self.selected_engine()].settings['options'][key]['value'] = value
         self.engines.write_xml('engines.xml')
 
-
     def _update_proto(self, proto):
+
+        if proto == Protocol.UCI:
+            self.protouci_radio.setChecked(True)
+        elif proto == Protocol.WINBOARD:
+            self.protowinboard_radio.setChecked(True)
+
         if self.selected_engine() in self.engines.engines:
             self.engines.engines[self.selected_engine()].settings['proto'] = proto
         self.engines.write_xml('engines.xml')
+
+    def _edit_engine_name(self, new_index):
+
+        # detect if we try to manually adjust the name
+        # if so, we need to reset the current index, overwrite the name and remove the new element
+        # make sure to not do this when we created the first element this way
+        if new_index >= len(self.engines.engines) and new_index >= 1:
+            new_text = self.engine_combo.currentText()
+            old_text = self.engine_combo.itemText(self.engine_combo_index)
+            self.engine_combo.setItemText(self.engine_combo_index, new_text)
+            self.engine_combo.setCurrentIndex(self.engine_combo_index)
+            self.engine_combo.removeItem(new_index)
+
+            # also adjusting the name in the config
+            self.engines.engines[new_text] = self.engines.engines[old_text]
+            del self.engines.engines[old_text]
+
+        elif new_index >= len(self.engines.engines) and new_index == 0:
+            new_text = self.engine_combo.currentText()
+            self.engines.engines[new_text] = Engine()
+            self.engine_combo_index = self.engine_combo.currentIndex()
+        else:
+            self.engine_combo_index = self.engine_combo.currentIndex()
+
+
+        # print(self.engines.engines[self.selected_engine()].settings)
+        self._update_option_widgets()
+
+    def _add_engine(self, name=None):
+
+        new_name = f"NewEngine{len(self.engines.engines)}" if name is None else name
+
+        self.engines.engines[new_name] = Engine()
+        self.engine_combo.addItem(new_name)
+        self.engine_combo.setCurrentIndex(self.engine_combo.count()-1)
+        self.engine_combo_index = self.engine_combo.count()-1
+
+    def _del_engine(self):
+
+        if self.engine_combo.count() == 0:
+            return
+
+        del self.engines.engines[self.engine_combo.currentText()]
+        self.engine_combo.removeItem(self.engine_combo.currentIndex())
+        self.engine_combo_index = self.engine_combo.count()-1
 
     def _update_exe(self, exe):
         if self.exe_edit.text() != exe:
@@ -227,6 +284,12 @@ class EngineConfigWidget(QWidget):
             self.verticalLayout_7.itemAt(i).widget().reset()
 
     def _update_option_widgets(self):
+
+        # set the text inside the exe text field and the protocol
+        if self.selected_engine() in self.engines.engines:
+            engine = self.engines.engines[self.selected_engine()]
+            self._update_exe(engine.settings['bin'])
+            self._update_proto(engine.settings['proto'])
 
         # make sure to delete previous widgets
         for i in reversed(range(self.verticalLayout_7.count())):

@@ -75,8 +75,13 @@ class Engine:
         self.is_running = False
         self.is_searching = False
 
-        if 'options' not in self.settings:
+        if 'bin' not in self.settings or self.settings['bin'] is None:
+            self.settings['bin'] = ''
+        if 'proto' not in self.settings or self.settings['proto'] is None:
+            self.settings['proto'] = Protocol.UCI
+        if 'options' not in self.settings or self.settings['options'] is None:
             self.settings['options'] = {}
+
 
     def create_dict(self):
         return self.settings
