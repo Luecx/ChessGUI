@@ -230,9 +230,15 @@ class Engine:
                     if 'value' in self.settings['options'][name]:
                         option['value'] = self.settings['options'][name]['value']
                     else:
-                        option['value'] = option['default']
+                        try:
+                            option['value'] = option['default']
+                        except:
+                            pass 
                 else:
-                    option['value'] = option['default']
+                    try:
+                        option['value'] = option['default']
+                    except:
+                        pass 
 
                 # place in new options list
                 new_options[name] = option

@@ -2,27 +2,18 @@
 <root>
 	<Koivisto>
 		<proto>Protocol.UCI</proto>
-		<bin>F:\OneDrive\ProgrammSpeicher\CLionProjects\Koivisto\cmake-build-release\Koivisto.exe</bin>
+		<bin>C:/Users/aryan/Documents/cs/engines/bg_dev.exe</bin>
 		<options>
 			<Hash>
 				<type>spin</type>
-				<min>1</min>
-				<max>65536</max>
-				<default>16</default>
-				<value>16</value>
+				<min>2</min>
+				<max>3000</max>
+				<default>2</default>
+				<value>38</value>
 			</Hash>
-			<Threads>
-				<type>spin</type>
-				<min>1</min>
-				<max>256</max>
-				<default>1</default>
-				<value>1</value>
-			</Threads>
-			<SyzygyPath>
-				<type>string</type>
-				<default/>
-				<value/>
-			</SyzygyPath>
+			<Clear>
+				<type>button</type>
+			</Clear>
 		</options>
 	</Koivisto>
 </root>
