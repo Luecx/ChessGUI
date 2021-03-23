@@ -1,32 +1,7 @@
 <?xml version="1.0" ?>
 <root>
-	<Koivisto>
-		<proto>Protocol.UCI</proto>
-		<bin>C:/Users/aryan/Documents/cs/engines/bg_dev.exe</bin>
-		<options>
-			<Hash>
-				<type>spin</type>
-				<min>1</min>
-				<max>65536</max>
-				<default>16</default>
-				<value>1175</value>
-			</Hash>
-			<Threads>
-				<type>spin</type>
-				<min>1</min>
-				<max>256</max>
-				<default>1</default>
-				<value>9</value>
-			</Threads>
-			<SyzygyPath>
-				<type>string</type>
-				<default/>
-				<value/>
-			</SyzygyPath>
-		</options>
-	</Koivisto>
 	<NewEngine1>
-		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/cmake-build-release/Koivisto2.exe</bin>
+		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/bin/Koivisto_4.29-x64-windows.exe</bin>
 		<proto>Protocol.UCI</proto>
 		<options>
 			<Hash>
@@ -34,14 +9,14 @@
 				<min>1</min>
 				<max>65536</max>
 				<default>16</default>
-				<value>201</value>
+				<value>16</value>
 			</Hash>
 			<Threads>
 				<type>spin</type>
 				<min>1</min>
 				<max>256</max>
 				<default>1</default>
-				<value>7</value>
+				<value>1</value>
 			</Threads>
 			<SyzygyPath>
 				<type>string</type>
@@ -50,19 +25,4 @@
 			</SyzygyPath>
 		</options>
 	</NewEngine1>
-	<NewEngine2>
-		<bin/>
-		<proto>Protocol.UCI</proto>
-		<options/>
-	</NewEngine2>
-	<NewEngine3>
-		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/bin/Koivisto_4.29-x64-windows-native-popcnt.exe</bin>
-		<proto>Protocol.UCI</proto>
-		<options/>
-	</NewEngine3>
-	<Koivisto2>
-		<bin/>
-		<proto>Protocol.UCI</proto>
-		<options/>
-	</Koivisto2>
 </root>

@@ -1,10 +1,13 @@
 import sys
 import os
+import typing
+
 import res
 import time
 import math
 import psutil
 
+from util import updateStatusBar
 from engines import Engines, Protocol, Engine
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar, QHBoxLayout, QSlider, QLabel, QLineEdit, \
     QPushButton, QFileDialog, QSpacerItem, QSizePolicy
@@ -76,6 +79,7 @@ class SpinOptionWidget(QWidget):
         self.label.setText(str(value))
         self.listener(self.name, int(value))
 
+
 class StringOptionWidget(QWidget):
     def __init__(self, name, listener, init, default=''):
         super(QWidget, self).__init__()
@@ -103,6 +107,7 @@ class StringOptionWidget(QWidget):
     def _change_value(self, value):
         self.label.setText(str(value))
         self.listener(self.name, str(value))
+
 
 class PathOptionWidget(QWidget):
     def __init__(self, name, listener,init, default=''):
@@ -148,6 +153,7 @@ class PathOptionWidget(QWidget):
     def _change_value(self, value):
         self.entry.setText(str(value))
         self.listener(self.name, value)
+
 
 class EngineConfigWidget(QWidget):
     def __init__(self):
@@ -222,21 +228,31 @@ class EngineConfigWidget(QWidget):
             # also adjusting the name in the config
             self.engines.engines[new_text] = self.engines.engines[old_text]
             del self.engines.engines[old_text]
-
+            updateStatusBar('replaced engine name')
         elif new_index >= len(self.engines.engines) and new_index == 0:
             new_text = self.engine_combo.currentText()
             self.engines.engines[new_text] = Engine()
             self.engine_combo_index = self.engine_combo.currentIndex()
+            updateStatusBar('created new engine')
         else:
             self.engine_combo_index = self.engine_combo.currentIndex()
+            updateStatusBar('changed current engine')
 
 
-        # print(self.engines.engines[self.selected_engine()].settings)
         self._update_option_widgets()
 
     def _add_engine(self, name=None):
 
-        new_name = f"NewEngine{len(self.engines.engines)}" if name is None else name
+        new_idx  = 1
+        new_name = f"NewEngine{new_idx}" if name is None else name
+        i = 0
+        while i < self.engine_combo.count():
+            if self.engine_combo.itemText(i) == new_name:
+                i = 0
+                new_idx += 1
+            new_name = f"NewEngine{new_idx}"
+            i += 1
+
 
         self.engines.engines[new_name] = Engine()
         self.engine_combo.addItem(new_name)
@@ -353,4 +369,7 @@ class EngineConfigWidget(QWidget):
                         name=option,
                         listener=self.update_option,
                         init=str(info['value'] if 'value' in info else str(info['default']))))
+
+
+
 

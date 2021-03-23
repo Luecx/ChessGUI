@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
 import chess 
 
 
-class Board(QWidget):
+class BoardWidget(QWidget):
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self, *args, **kwargs)
         self.config()

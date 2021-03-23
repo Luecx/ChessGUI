@@ -8,9 +8,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
 from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5.QtGui import QCursor
 from PyQt5 import uic
-from analysewidget import *
-from engineconfigwidget import *
-
+from analysewidget import AnalyseWidget
+from engineconfigwidget import EngineConfigWidget
 
 class MainWindow(QMainWindow):
 
@@ -23,15 +22,20 @@ class MainWindow(QMainWindow):
         path = os.path.join(os.path.dirname(__file__), "main_form.ui")
         uic.loadUi(path, self)
         self.setWindowFlag(Qt.FramelessWindowHint)
-        self.menuopen_button.clicked.connect(lambda x: self.menu_animation(x))
-        self.minimise_button.clicked.connect(lambda x:self.menu_buttons('minimise'))
-        self.maximise_button.clicked.connect(lambda x:self.menu_buttons('maximise'))
-        self.close_button.clicked.connect(lambda x:self.menu_buttons('close'))
+        self.menuopen_button.clicked.connect(lambda x: self._menu_animation(x))
+        self.minimise_button.clicked.connect(lambda x:self._menu_buttons('minimise'))
+        self.maximise_button.clicked.connect(lambda x:self._menu_buttons('maximise'))
+        self.close_button.clicked.connect(lambda x:self._menu_buttons('close'))
         self.title_frame.installEventFilter(self)
         self.installEventFilter(self)
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
-        self.statusBar.setStyleSheet("background-color:#272935;")
+        self.statusBar.setStyleSheet(
+            "background-color:#272935;"
+            "color: rgb(210, 210, 210); "
+            "font-size: 10px; "
+            "font-family: 'Segoe UI'; "
+            "font-weight:400;")
         self.title_frame.setMouseTracking(True)
 
     def setup_central_widgets(self):
@@ -53,9 +57,11 @@ class MainWindow(QMainWindow):
         # binding the buttons
         self.analyse_button.clicked.connect(lambda x:self.content_stack.setCurrentIndex(0))
         self.engineconfig_button.clicked.connect(lambda x:self.content_stack.setCurrentIndex(1))
-        pass
 
-    def menu_buttons(self, event):
+        # binding a change of the current page
+        self.content_stack.currentChanged.connect(lambda x:self._current_page_changed(x))
+
+    def _menu_buttons(self, event):
         if event == 'maximise':
             self.previousWidth = self.width()
             if self.isMaximized():
@@ -67,7 +73,7 @@ class MainWindow(QMainWindow):
         if event == 'minimise':
             self.showMinimized()
 
-    def menu_animation(self, mode):
+    def _menu_animation(self, mode):
         self.open_menu_anim = QPropertyAnimation(self.menu_frame, b"minimumWidth")
         self.open_menu_anim.setDuration(300)
         if mode:
@@ -76,6 +82,11 @@ class MainWindow(QMainWindow):
             self.open_menu_anim.setEndValue(70)
 
         self.open_menu_anim.start()
+
+    def _current_page_changed(self, new_index):
+        self.getAnalyseWidget().stop_analysis()
+        self.getAnalyseWidget().reload_engines()
+
 
     def eventFilter(self, source, event):
         if source == self.title_frame:
@@ -97,7 +108,7 @@ class MainWindow(QMainWindow):
                         self.move(new_x,0)
                     else:
                         if QCursor.pos().y() < 3:
-                            self.menu_buttons('maximise')
+                            self._menu_buttons('maximise')
                             self.ignore_movement = True
                         else:
                             self.move(event.pos() + self.title_frame.mapToGlobal(self.title_frame.pos()) - self.drag_root_position)
@@ -107,6 +118,12 @@ class MainWindow(QMainWindow):
             else:
                 self.ignore_movement = False
         return QMainWindow.eventFilter(self, source, event)
+
+    def getAnalyseWidget(self):
+        return self.analyse_widget
+
+    def getEngineConfigWidget(self):
+        return self.engineconfig_widget
 
 if __name__ == "__main__":
 

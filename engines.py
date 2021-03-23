@@ -1,13 +1,12 @@
 import subprocess
 import time
+from util import *
 from enum import Enum, IntEnum
 from queue import Queue, Empty
 from threading import Thread
-
 from xml.etree import cElementTree as ElementTree
 from dicttoxml import dicttoxml
 from xml.dom.minidom import parseString
-
 
 class XmlListConfig(list):
     def __init__(self, aList):
@@ -63,6 +62,7 @@ class Protocol(IntEnum):
     UCI = 1
     WINBOARD = 2
 
+
 class Engine:
 
     def __init__(self, **kwargs):
@@ -74,6 +74,7 @@ class Engine:
         self.search_result = []
         self.is_running = False
         self.is_searching = False
+        self.listener = None
 
         if 'bin' not in self.settings or self.settings['bin'] is None:
             self.settings['bin'] = ''
@@ -81,7 +82,6 @@ class Engine:
             self.settings['proto'] = Protocol.UCI
         if 'options' not in self.settings or self.settings['options'] is None:
             self.settings['options'] = {}
-
 
     def create_dict(self):
         return self.settings
@@ -102,6 +102,7 @@ class Engine:
         except:
             self.process = None
             self.is_running = False
+            updateStatusBar(f"Error starting process{self.settings['bin']}")
             return False
         self._retrieve_information()
         return True
@@ -167,8 +168,14 @@ class Engine:
 
     def _enqueue_output(self, out, queue):
         for line in iter(out.readline, b''):
-            queue.put(line)
+            if line:
+                queue.put(line)
+                if self.listener is not None:
+                    self.listener(line)
         out.close()
+
+    def listen(self, func):
+        self.listener = func
 
     def _update_state(self):
         if self.is_running:
@@ -185,7 +192,15 @@ class Engine:
 
         new_options = {}
 
+        start_time = time.perf_counter()
+
         while True:
+
+            # check if retrieving information took longer than a full second -> crash or invalid
+            if time.perf_counter() - start_time > 1:
+                updateStatusBar("Error retrieving options. Using this engine can lead to potential crashes since it does not implement the Protocol correctly")
+                break
+
             try:
                 line = self.queue.get_nowait()
             except Empty:

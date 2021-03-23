@@ -611,7 +611,7 @@ font-weight: 400;
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-	background-image:url(:/icon_24x24/icons/24x24/cil-menu.png);
+	background-image:url(:/icon_24x24/assets/icons/24x24/cil-menu.png);
 	background-position: center;
 	background-repeat: no-repeat;
 	border: none;
@@ -758,7 +758,7 @@ font-weight: 700;</string>
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-image:url(:/icon_24x24/icons/24x24/cil-window-minimize.png);
+                <string notr="true">background-image:url(:/icon_24x24/assets/icons/24x24/cil-window-minimize.png);
 </string>
                </property>
                <property name="text">
@@ -787,7 +787,7 @@ font-weight: 700;</string>
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-image:url(:/icon_24x24/icons/24x24/cil-window-maximize.png);</string>
+                <string notr="true">background-image:url(:/icon_24x24/assets/icons/24x24/cil-window-maximize.png);</string>
                </property>
                <property name="text">
                 <string/>
@@ -815,7 +815,7 @@ font-weight: 700;</string>
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-image:url(:/icon_24x24/icons/24x24/cil-x.png);</string>
+                <string notr="true">background-image:url(:/icon_24x24/assets/icons/24x24/cil-x.png);</string>
                </property>
                <property name="text">
                 <string/>
@@ -957,7 +957,7 @@ QPushButton:checked{
             </property>
             <property name="icon">
              <iconset resource="res.qrc">
-              <normaloff>:/icon_24x24/icons/24x24/cil-3d.png</normaloff>:/icon_24x24/icons/24x24/cil-3d.png</iconset>
+              <normaloff>:/icon_24x24/assets/icons/24x24/cil-3d.png</normaloff>:/icon_24x24/assets/icons/24x24/cil-3d.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -986,7 +986,7 @@ QPushButton:checked{
             </property>
             <property name="icon">
              <iconset resource="res.qrc">
-              <normaloff>:/icon_24x24/icons/24x24/cil-settings.png</normaloff>:/icon_24x24/icons/24x24/cil-settings.png</iconset>
+              <normaloff>:/icon_24x24/assets/icons/24x24/cil-settings.png</normaloff>:/icon_24x24/assets/icons/24x24/cil-settings.png</iconset>
             </property>
             <property name="iconSize">
              <size>

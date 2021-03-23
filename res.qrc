@@ -1,10 +1,11 @@
 <RCC>
     <qresource prefix="/icon_24x24">
-        <file>icons/24x24/cil-menu.png</file>
-        <file>icons/24x24/cil-settings.png</file>
-        <file>icons/24x24/cil-window-maximize.png</file>
-        <file>icons/24x24/cil-window-minimize.png</file>
-        <file>icons/24x24/cil-x.png</file>
-        <file>icons/24x24/cil-3d.png</file>
+        <file>assets/icons/24x24/cil-menu.png</file>
+        <file>assets/icons/24x24/cil-settings.png</file>
+        <file>assets/icons/24x24/cil-window-maximize.png</file>
+        <file>assets/icons/24x24/cil-window-minimize.png</file>
+        <file>assets/icons/24x24/cil-x.png</file>
+        <file>assets/icons/24x24/cil-3d.png</file>
+        <file>assets/icons/24x24/cil-power-standby.png</file>
     </qresource>
 </RCC>
