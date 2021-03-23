@@ -79,7 +79,7 @@ class BoardWidget(QWidget):
                 
     def createBoard(self):
         self.boardLabel  = QLabel(self)
-        self.boardPixmap = QPixmap('assets//images//board.png')
+        self.boardPixmap = QPixmap('../assets/images/board.png')
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.move(0, 0)
