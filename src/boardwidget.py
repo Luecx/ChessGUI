@@ -1,9 +1,10 @@
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy
 from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QPixmap
-from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
+from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint
 import chess
 import res
+import time
 
 class BoardWidget(QWidget):
     def __init__(self, *args, **kwargs):
@@ -75,8 +76,22 @@ class BoardWidget(QWidget):
                move = chess.Move(self.clickedAt, square)
                if move in self.board.legal_moves:
                    self.board.push(move)
+
+                   x_from = round(move.from_square %  8 * self.cellSize)
+                   y_from = round((7-move.from_square // 8) * self.cellSize)
+                   x_to   = round(move.  to_square %  8 * self.cellSize)
+                   y_to   = round((7-move.  to_square // 8) * self.cellSize)
+
                    self.refresh_pieces()
-                   self.board_state_changed()
+                   label = self.pieces[move.to_square]
+                   self.anim = QPropertyAnimation(label, b"pos")
+                   self.anim.setDuration(300)
+                   self.anim.setStartValue(QPoint(x_from, y_from))
+                   self.anim.setEndValue(QPoint(x_to,y_to))
+                   self.anim.start()
+#                   time.sleep(0.3)
+
+#                   self.board_state_changed()
                self.clickedAt = None 
 
     def board_state_changed(self):

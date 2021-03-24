@@ -16,7 +16,7 @@
 				<min>1</min>
 				<max>256</max>
 				<default>1</default>
-				<value>14</value>
+				<value>1</value>
 			</Threads>
 			<SyzygyPath>
 				<type>string</type>
