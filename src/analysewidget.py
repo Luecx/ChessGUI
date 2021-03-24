@@ -40,6 +40,13 @@ class AnalyseWidget(QWidget):
             self.setpiece_buttons[i].clicked.connect(lambda x,i=i:self._set_piece_button_pressed(i,x))
 
         self.fen_edit.editingFinished.connect(lambda:self._set_fen(self.fen_edit.text()))
+
+
+        self.undomove_button.clicked.connect(lambda x:self.board_widget.undo_move())
+        self. undoall_button.clicked.connect(lambda x:self.board_widget.undo_all())
+        self.redomove_button.clicked.connect(lambda x:self.board_widget.redo_move())
+        self. redoall_button.clicked.connect(lambda x:self.board_widget.redo_all())
+
         self._update_board_widgets()
 
     def _current_engine(self):

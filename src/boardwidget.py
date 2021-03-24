@@ -19,6 +19,7 @@ class BoardWidget(QWidget):
         self._create_board()
         self._create_pieces()
         self.listener  = None
+        self.move_memory = []
 
     def _next_color(self, color):
         if color == self.darkCell:
@@ -78,6 +79,7 @@ class BoardWidget(QWidget):
             else:
                 self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
                 self.move_from_to(self.clickedAt, square)
+                self.notify_listener()
                 self.clickedAt = None
 
 
@@ -175,8 +177,38 @@ class BoardWidget(QWidget):
         self.anim.setStartValue(QPoint(x_from, y_from))
         self.anim.setEndValue(QPoint(x_to,y_to))
         self.anim.start()
+        self.move_memory = []
 
-    def board_state_changed(self):
+    def undo_move(self):
+        if len(self.board.move_stack) > 0:
+            self.move_memory = [self.board.pop()] + self.move_memory
+        self.refresh_board()
+        self.notify_listener()
+
+    def undo_all(self):
+
+        while len(self.board.move_stack) > 0:
+            self.move_memory = [self.board.pop()] + self.move_memory
+
+        self.board.clear_stack()
+        self.refresh_board()
+        self.notify_listener()
+
+    def redo_move(self, refresh=True):
+        if len(self.move_memory) > 0:
+            self.board.push(self.move_memory[0])
+            self.move_memory = self.move_memory[1:]
+        if refresh:
+            self.refresh_board()
+            self.notify_listener()
+
+    def redo_all(self):
+        while len(self.move_memory) > 0:
+            self.redo_move(refresh=False)
+        self.refresh_board()
+        self.notify_listener()
+
+    def notify_listener(self):
         if self.listener is not None:
             self.listener(self.board.fen())
 

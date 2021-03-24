@@ -301,7 +301,7 @@ QPushButton:checked{
               <number>20</number>
              </property>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="undoall_button">
                <property name="text">
                 <string/>
                </property>
@@ -312,7 +312,7 @@ QPushButton:checked{
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_2">
+              <widget class="QPushButton" name="undomove_button">
                <property name="text">
                 <string/>
                </property>
@@ -323,7 +323,7 @@ QPushButton:checked{
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_3">
+              <widget class="QPushButton" name="redomove_button">
                <property name="text">
                 <string/>
                </property>
@@ -334,7 +334,7 @@ QPushButton:checked{
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_4">
+              <widget class="QPushButton" name="redoall_button">
                <property name="text">
                 <string/>
                </property>
