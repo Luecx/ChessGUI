@@ -1,7 +1,6 @@
-from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy
-from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QPixmap
-from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint
+from PyQt5.QtWidgets import QWidget, QLabel, QSizePolicy, QDialog, QGridLayout, QPushButton
+from PyQt5.QtGui import QColor, QPixmap, QIcon
+from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint, QSize
 import chess
 import res
 import time
@@ -79,32 +78,114 @@ class BoardWidget(QWidget):
                    self.pieces[self.clickedAt].setStyleSheet('border: 2px solid red; background-color:transparent;')
            else:
                self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
-               self.move(self.clickedAt, square)
+               self.move_from_to(self.clickedAt, square)
                self.clickedAt = None
 
-    def move(self, sq_from, sq_to):
+    def show_promotion_dialog(self):
+        # creates a promotion dialog to select a piece and return that
+        # (0 for knight, 1 for bishop, 2 for rook, 3 for queen)
+        d = QDialog()
+        # no dialog bar
+        d.setWindowFlags(Qt.FramelessWindowHint)
+        layout = QGridLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setHorizontalSpacing(0)
+        layout.setVerticalSpacing(0)
+        layout.setSpacing(0)
+        # set default size
+        d.resize(400,400)
+        d.move(self.x(), self.y())
+
+        promotionPiece = 0
+
+        def clickEvent(promoPiece):
+            nonlocal promotionPiece
+            promotionPiece = promoPiece
+            d.close()
+
+        turn = self.board.turn
+        pieces = [  chess.Piece(chess.KNIGHT,turn),
+                    chess.Piece(chess.BISHOP,turn),
+                    chess.Piece(chess.ROOK,turn),
+                    chess.Piece(chess.QUEEN,turn)]
+
+        for i in range(4):
+            # add some chess board style
+            squareType      = (i // 2 + i % 2 + 1) % 2
+            squareColor     = ['#F0D9B7', '#B48866'][squareType]
+            squareColorH    = ['#F8E2BF', '#BB9F6D'][squareType]
+            button = QPushButton()
+            # select the icon + icon size
+            button.setIcon(QIcon(self._piece_path(pieces[i])))
+            button.setIconSize(QSize(160,160))
+            # fit the buttons
+            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            button.clicked.connect(lambda state, i=i: clickEvent(i))
+            # background color
+            button.setStyleSheet(
+                f"""
+                QPushButton {{
+                    background-color: {squareColor};
+                    border: 0;
+                }}
+
+                QPushButton:hover {{
+                    background-color: {squareColorH};
+                }}
+                """)
+            # adding to the grid layout
+            layout.addWidget(button, i // 2, i % 2)
+
+        d.setLayout(layout)
+        # make sure it cannot be closed without selection
+        d.setWindowModality(Qt.ApplicationModal)
+        d.exec_()
+
+        return promotionPiece
+
+    def move_from_to(self, sq_from, sq_to):
         available_moves = [x for x in self.board.legal_moves if x.from_square == sq_from and x.to_square == sq_to]
-        print(available_moves)
+
         if len(available_moves) > 1:
-            return
+            promo_piece = self.show_promotion_dialog() + 2
+            for k in available_moves:
+                if k.promotion == promo_piece:
+                    available_moves[0] = k
             # handle promotion
-        elif len(available_moves) < 1:
+        if len(available_moves) < 1:
             # no legal move
             return
-        else:
-            move = available_moves[0]
-            self.board.push(move)
 
-            x_from,y_from = self._get_coordinate(move.from_square)
-            x_to  ,y_to   = self._get_coordinate(move.to_square)
+        move = available_moves[0]
+        self.board.push(move)
 
-            self.refresh_pieces()
-            label = self.pieces[move.to_square]
-            self.anim = QPropertyAnimation(label, b"pos")
-            self.anim.setDuration(200)
-            self.anim.setStartValue(QPoint(x_from, y_from))
-            self.anim.setEndValue(QPoint(x_to,y_to))
-            self.anim.start()
+        x_from,y_from = self._get_coordinate(move.from_square)
+        x_to  ,y_to   = self._get_coordinate(move.to_square)
+
+        self.refresh_pieces()
+        label = self.pieces[move.to_square]
+        self.anim = QPropertyAnimation(label, b"pos")
+        self.anim.setDuration(200)
+        self.anim.setStartValue(QPoint(x_from, y_from))
+        self.anim.setEndValue(QPoint(x_to,y_to))
+        self.anim.start()
+
+    def move_move(self, move):
+        if move not in self.board.legal_moves:
+            return
+
+        self.board.push(move)
+
+        x_from,y_from = self._get_coordinate(move.from_square)
+        x_to  ,y_to   = self._get_coordinate(move.to_square)
+
+        self.refresh_pieces()
+        label = self.pieces[move.to_square]
+        self.anim = QPropertyAnimation(label, b"pos")
+        self.anim.setDuration(200)
+        self.anim.setStartValue(QPoint(x_from, y_from))
+        self.anim.setEndValue(QPoint(x_to,y_to))
+        self.anim.start()
 
     def board_state_changed(self):
         if self.listener is not None:
