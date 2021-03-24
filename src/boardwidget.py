@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy
 from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QPixmap
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
 import chess
-
+import res
 
 class BoardWidget(QWidget):
     def __init__(self, *args, **kwargs):
@@ -88,7 +88,7 @@ class BoardWidget(QWidget):
 
     def _create_board(self):
         self.boardLabel  = QLabel(self)
-        self.boardPixmap = QPixmap('../assets/images/board.png')
+        self.boardPixmap = QPixmap(":/boards/images/board.png")
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.move(0, 0)
