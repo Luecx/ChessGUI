@@ -1,9 +1,9 @@
-from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy
-from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QPixmap
-from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
+from PyQt5.QtWidgets import QWidget, QLabel, QSizePolicy, QDialog, QGridLayout, QPushButton
+from PyQt5.QtGui import QColor, QPixmap, QIcon
+from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint, QSize
 import chess
-
+import res
+import time
 
 class BoardWidget(QWidget):
     def __init__(self, *args, **kwargs):
@@ -14,11 +14,13 @@ class BoardWidget(QWidget):
         self.cellSize  = 100
         self.lightCell = QColor(0xecdab9)
         self.darkCell  = QColor(0xae8a68)
-        self.board     = chess.Board()
+        self.board     = chess.Board("6k1/5p2/6p1/8/7p/8/6PP/6K1 b - - 0 1")
         self.clickedAt = None
         self._create_board()
         self._create_pieces()
         self.listener  = None
+        self.piece_type_placing = None
+        self.move_memory = []
 
     def _next_color(self, color):
         if color == self.darkCell:
@@ -29,57 +31,203 @@ class BoardWidget(QWidget):
     def resizeEvent(self, e):
         x, y = e.size().height(), e.size().width()
         self.cellSize = min(x, y) // 8
-        self._refresh_pieces()
+        self.refresh_board()
         self._refresh_board()
           
     def _get_index(self, square):
         return square // 8, square % 8
 
+    def _get_coordinate(self, square):
+        i, j = self._get_index(square)
+        return round(j * self.cellSize), round((7-i) * self.cellSize)
+
+    def _get_square(self, x, y):
+        return x // self.cellSize + (7 - y // self.cellSize) * 8
+
     def _get_color_label(self, piece):
         return 'w' if piece.color == chess.WHITE else 'b'
        
     def _piece_path(self, piece):
-        return f'..//assets//images//{self._get_color_label(piece) + piece.symbol()}.png'
+        return f'://pieces//images//{self._get_color_label(piece) + piece.symbol().lower()}.png'
 
     def _refresh_board(self):
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.resize(self.cellSize * 8, self.cellSize * 8)
 
-    def _refresh_pieces(self):
+    def refresh_board(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
-            if piece is None: 
+            if piece is None:
                 self.pieces[square].clear()
                 continue
- 
 
-            i, j = self._get_index(chess.square_mirror(square))
+            x, y = self._get_coordinate(square)
 
             self.pieces[square].resize(self.cellSize,self.cellSize)
-            self.pieces[square].move(j * self.cellSize, i * self.cellSize)
+            self.pieces[square].move(x,y)
             self.pieces[square].setPixmap(QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
+    def set_piece_placed(self, piece_type=None):
+        self.piece_type_placing = piece_type
+
     def mousePressEvent(self, e):
+
+        if self.piece_type_placing is not None:
+            square = self._get_square(e.x(), e.y())
+            if self.piece_type_placing == 0:
+                self.board.remove_piece_at(square)
+            else:
+                if e.button() == Qt.LeftButton:
+                    self.board.set_piece_at(square, chess.Piece(self.piece_type_placing, chess.WHITE))
+                elif e.button() == Qt.RightButton:
+                    self.board.set_piece_at(square, chess.Piece(self.piece_type_placing, chess.BLACK))
+
+            self.notify_listener()
+            self.refresh_board()
+            return
+
+
         if e.button() == Qt.LeftButton:
-           i, j = e.y() // self.cellSize, e.x() // self.cellSize
-           square = chess.square_mirror(i * 8 + j)
-           
-           if self.clickedAt is None:
-               self.clickedAt = square 
-               self.clickedAti = i 
-               self.clickedAtj = j
+            square = self._get_square(e.x(), e.y())
+            if self.clickedAt is None:
+                if self.board.piece_at(square) is not None and self.board.turn == self.board.piece_at(square).color:
+                    self.clickedAt = square
+                    self.pieces[self.clickedAt].setStyleSheet('border: 5px solid gray; border-radius:5px; background-color:transparent;')
+            else:
+                self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
+                self.move_from_to(self.clickedAt, square)
+                self.notify_listener()
+                self.clickedAt = None
 
-           else:
-               move = chess.Move(self.clickedAt, square)
-               if move in self.board.legal_moves:
-                   self.board.push(move)
-                   self._refresh_pieces()
-                   self.board_state_changed()
-               self.clickedAt = None 
 
-    def board_state_changed(self):
+    def show_promotion_dialog(self):
+        # creates a promotion dialog to select a piece and return that
+        # (0 for knight, 1 for bishop, 2 for rook, 3 for queen)
+        d = QDialog()
+        # no dialog bar
+        d.setWindowFlags(Qt.FramelessWindowHint)
+        layout = QGridLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setHorizontalSpacing(0)
+        layout.setVerticalSpacing(0)
+        layout.setSpacing(0)
+        # set default size
+        d.resize(400,400)
+        d.move(self.x(), self.y())
+
+        promotionPiece = 0
+
+        def clickEvent(promoPiece):
+            nonlocal promotionPiece
+            promotionPiece = promoPiece
+            d.close()
+
+        turn = self.board.turn
+        pieces = [  chess.Piece(chess.KNIGHT    ,turn),
+                    chess.Piece(chess.BISHOP    ,turn),
+                    chess.Piece(chess.ROOK      ,turn),
+                    chess.Piece(chess.QUEEN     ,turn)]
+
+        for i in range(4):
+            # add some chess board style
+            squareType      = (i // 2 + i % 2 + 1) % 2
+            squareColor     = ['#F0D9B7', '#B48866'][squareType]
+            squareColorH    = ['#F8E2BF', '#BB9F6D'][squareType]
+            button = QPushButton()
+            # select the icon + icon size
+            button.setIcon(QIcon(self._piece_path(pieces[i])))
+            button.setIconSize(QSize(160,160))
+            # fit the buttons
+            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            button.clicked.connect(lambda state, i=i: clickEvent(i))
+            # background color
+            button.setStyleSheet(
+                f"""
+                QPushButton {{
+                    background-color: {squareColor};
+                    border: 0;
+                }}
+
+                QPushButton:hover {{
+                    background-color: {squareColorH};
+                }}
+                """)
+            # adding to the grid layout
+            layout.addWidget(button, i // 2, i % 2)
+
+        d.setLayout(layout)
+        # make sure it cannot be closed without selection
+        d.setWindowModality(Qt.ApplicationModal)
+        d.exec_()
+
+        return promotionPiece
+
+    def move_from_to(self, sq_from, sq_to):
+        available_moves = [x for x in self.board.legal_moves if x.from_square == sq_from and x.to_square == sq_to]
+
+        if len(available_moves) > 1:
+            promo_piece = self.show_promotion_dialog() + 2
+            for k in available_moves:
+                if k.promotion == promo_piece:
+                    available_moves[0] = k
+            # handle promotion
+        if len(available_moves) < 1:
+            # no legal move
+            return
+
+        move = available_moves[0]
+        self.move_move(move)
+
+    def move_move(self, move):
+        if move not in self.board.legal_moves:
+            return
+
+        self.board.push(move)
+
+        x_from,y_from = self._get_coordinate(move.from_square)
+        x_to  ,y_to   = self._get_coordinate(move.to_square)
+
+        self.refresh_board()
+        label = self.pieces[move.to_square]
+        self.anim = QPropertyAnimation(label, b"pos")
+        self.anim.setDuration(200)
+        self.anim.setStartValue(QPoint(x_from, y_from))
+        self.anim.setEndValue(QPoint(x_to,y_to))
+        self.anim.start()
+        self.move_memory = []
+
+    def undo_move(self):
+        if len(self.board.move_stack) > 0:
+            self.move_memory = [self.board.pop()] + self.move_memory
+        self.refresh_board()
+        self.notify_listener()
+
+    def undo_all(self):
+
+        while len(self.board.move_stack) > 0:
+            self.move_memory = [self.board.pop()] + self.move_memory
+
+        self.board.clear_stack()
+        self.refresh_board()
+        self.notify_listener()
+
+    def redo_move(self, refresh=True):
+        if len(self.move_memory) > 0:
+            self.board.push(self.move_memory[0])
+            self.move_memory = self.move_memory[1:]
+        if refresh:
+            self.refresh_board()
+            self.notify_listener()
+
+    def redo_all(self):
+        while len(self.move_memory) > 0:
+            self.redo_move(refresh=False)
+        self.refresh_board()
+        self.notify_listener()
+
+    def notify_listener(self):
         if self.listener is not None:
             self.listener(self.board.fen())
 
@@ -88,7 +236,7 @@ class BoardWidget(QWidget):
 
     def _create_board(self):
         self.boardLabel  = QLabel(self)
-        self.boardPixmap = QPixmap('../assets/images/board.png')
+        self.boardPixmap = QPixmap(":/boards/images/board.png")
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.move(0, 0)
@@ -99,9 +247,10 @@ class BoardWidget(QWidget):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
-            i, j = self._get_index(chess.square_mirror(square))
+            x, y = self._get_coordinate(square)
 
             label = QLabel(self)
-            label.move(j * self.cellSize, i * self.cellSize)
+            label.move(x,y)
+            label.setAlignment(Qt.AlignCenter)
             label.setStyleSheet("background-color:transparent")
             self.pieces.append(label)

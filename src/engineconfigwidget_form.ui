@@ -559,9 +559,13 @@ QWidget{
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">background-color: rgb(41, 45, 56);
-border-radius: 5px;
-</string>
+            <string notr="true">.QFrame{
+	background-color: rgb(41, 45, 56);	
+	border-radius: 5px;
+}
+.QLabel{
+	background-color: rgb(41, 45, 56);	
+}</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
@@ -660,9 +664,13 @@ font-size: 14px;</string>
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">background-color: rgb(41, 45, 56);
-border-radius: 5px;
-</string>
+            <string notr="true">.QFrame{
+	background-color: rgb(41, 45, 56);	
+	border-radius: 5px;
+}
+.QLabel{
+	background-color: rgb(41, 45, 56);	
+}</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
@@ -745,9 +753,18 @@ font-size: 14px;</string>
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">background-color: rgb(41, 45, 56);
-border-radius: 5px;
-</string>
+            <string notr="true">.QFrame{
+	background-color: rgb(41, 45, 56);	
+	border-radius: 5px;
+}
+
+.QLabel{
+	background-color: rgb(41, 45, 56);	
+}
+
+.QRadioButton{
+	background-color: rgb(41, 45, 56);	
+}</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
@@ -849,8 +866,23 @@ font-size: 14px;</string>
             </sizepolicy>
            </property>
            <property name="styleSheet">
-            <string notr="true">background-color: rgb(41, 45, 56);
-border-radius: 5px;</string>
+            <string notr="true">
+.QWidget{
+	background-color: rgb(41, 45, 56);
+	border-radius: 5px;
+}
+
+.QLabel{
+	background-color: rgb(41, 45, 56);
+	border-radius: 5px;
+}
+
+.QFrame{
+	background-color: rgb(41, 45, 56);
+	border-radius: 5px;
+}
+
+</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
@@ -937,8 +969,8 @@ font-size: 14px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>516</width>
-                 <height>616</height>
+                 <width>514</width>
+                 <height>610</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_8">

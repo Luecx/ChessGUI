@@ -227,17 +227,37 @@ QPushButton:checked{
         <property name="styleSheet">
          <string notr="true">
 
-border-top-left-radius :5px;
-border-top-right-radius : 5px;
-border-bottom-left-radius : 5px;
-border-bottom-right-radius : 5px;	
-background-color:  rgb(41, 45, 56);
+
+
+.QWidget{
+	border-top-left-radius :5px;
+	border-top-right-radius : 5px;
+	border-bottom-left-radius : 5px;
+	border-bottom-right-radius : 5px;	
+    background-color:  rgb(41, 45, 56);
+}
+
+.QFrame{
+	border-top-left-radius :5px;
+	border-top-right-radius : 5px;
+	border-bottom-left-radius : 5px;
+	border-bottom-right-radius : 5px;	
+    background-color:  rgb(41, 45, 56);
+}
+
+
+.QLabel{
+	border-radius: 0px;
+    background-color:  rgb(41, 45, 56);
+}
+
+
 
 
 </string>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="boardpage_widget">
          <property name="styleSheet">
@@ -246,7 +266,360 @@ background-color:  rgb(41, 45, 56);
     min-height: 20px;
 }</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2"/>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="spacing">
+           <number>15</number>
+          </property>
+          <item>
+           <widget class="QFrame" name="frame_7">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="spacing">
+              <number>1</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>20</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="undoall_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/icon_24x24/icons/24x24/cil-media-skip-backward.png</normaloff>:/icon_24x24/icons/24x24/cil-media-skip-backward.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="undomove_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/icon_24x24/icons/24x24/cil-media-step-backward.png</normaloff>:/icon_24x24/icons/24x24/cil-media-step-backward.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="redomove_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/icon_24x24/icons/24x24/cil-media-step-forward.png</normaloff>:/icon_24x24/icons/24x24/cil-media-step-forward.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="redoall_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/icon_24x24/icons/24x24/cil-media-skip-forward.png</normaloff>:/icon_24x24/icons/24x24/cil-media-skip-forward.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="styleSheet">
+             <string notr="true">font-weight: 600;
+font-size: 16px;</string>
+            </property>
+            <property name="text">
+             <string>FEN</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="fen_edit"/>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="styleSheet">
+             <string notr="true">font-weight: 600;
+font-size: 16px;</string>
+            </property>
+            <property name="text">
+             <string>Position setup</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame_8">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QPushButton" name="setnone_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/icon_24x24/icons/24x24/cil-trash.png</normaloff>:/icon_24x24/icons/24x24/cil-trash.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="setpawn_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/pieces/images/wp.png</normaloff>:/pieces/images/wp.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="setknight_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/pieces/images/wn.png</normaloff>:/pieces/images/wn.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="setbishop_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/pieces/images/wb.png</normaloff>:/pieces/images/wb.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="setrook_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/pieces/images/wr.png</normaloff>:/pieces/images/wr.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="setqueen_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/pieces/images/wq.png</normaloff>:/pieces/images/wq.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="setking_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../assets/res.qrc">
+                 <normaloff>:/pieces/images/wk.png</normaloff>:/pieces/images/wk.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>82</width>
+                 <height>82</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
         <widget class="QWidget" name="enginepage_widget">
          <property name="styleSheet">
@@ -305,8 +678,7 @@ background-color:  rgb(41, 45, 56);
 QPushButton{
      background-color: #960000;
      border-radius: 5px;
-     background-image: url(:/icon_24x24/assets/icons/24x24/cil-power-standby.png);
-     background-size: 24px;
+     background-image: url(:/icon_24x24/icons/24x24/cil-power-standby.png);
 	background-position: center;
 	background-repeat: no-repeat;
 }</string>
@@ -498,7 +870,7 @@ QPushButton{
      max-height: 14px;    
      text-align: left;
      font-size: 10px;
-     
+     background-color:#1A1B24;
 }
 </string>
             </property>
@@ -600,6 +972,8 @@ QPushButton{
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../assets/res.qrc"/>
+ </resources>
  <connections/>
 </ui>

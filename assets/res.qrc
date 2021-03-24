@@ -1,11 +1,33 @@
 <RCC>
     <qresource prefix="/icon_24x24">
-        <file>assets/icons/24x24/cil-menu.png</file>
-        <file>assets/icons/24x24/cil-settings.png</file>
-        <file>assets/icons/24x24/cil-window-maximize.png</file>
-        <file>assets/icons/24x24/cil-window-minimize.png</file>
-        <file>assets/icons/24x24/cil-x.png</file>
-        <file>assets/icons/24x24/cil-3d.png</file>
-        <file>assets/icons/24x24/cil-power-standby.png</file>
+        <file>icons/24x24/cil-menu.png</file>
+        <file>icons/24x24/cil-settings.png</file>
+        <file>icons/24x24/cil-window-maximize.png</file>
+        <file>icons/24x24/cil-window-minimize.png</file>
+        <file>icons/24x24/cil-x.png</file>
+        <file>icons/24x24/cil-3d.png</file>
+        <file>icons/24x24/cil-power-standby.png</file>
+        <file>icons/24x24/cil-media-skip-backward.png</file>
+        <file>icons/24x24/cil-media-skip-forward.png</file>
+        <file>icons/24x24/cil-media-step-backward.png</file>
+        <file>icons/24x24/cil-media-step-forward.png</file>
+        <file>icons/24x24/cil-trash.png</file>
+    </qresource>
+    <qresource prefix="/pieces">
+        <file>images/bb.png</file>
+        <file>images/bk.png</file>
+        <file>images/bn.png</file>
+        <file>images/bp.png</file>
+        <file>images/bq.png</file>
+        <file>images/br.png</file>
+        <file>images/wb.png</file>
+        <file>images/wk.png</file>
+        <file>images/wn.png</file>
+        <file>images/wp.png</file>
+        <file>images/wq.png</file>
+        <file>images/wr.png</file>
+    </qresource>
+    <qresource prefix="/boards">
+        <file>images/board.png</file>
     </qresource>
 </RCC>

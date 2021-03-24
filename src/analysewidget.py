@@ -21,19 +21,40 @@ class AnalyseWidget(QWidget):
         uic.loadUi(path, self)
 
         self.board_widget = BoardWidget()
-        self.board_widget.listen(lambda x:self._update_search())
+        self.board_widget.listen(lambda x:self._board_changed())
 
         self.gridLayout.addWidget(self.board_widget, 0, 0)
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
         self.boardroot_frame.setMaximumWidth(self.boardroot_frame.height())
-        self.boardpage_button.clicked.connect(lambda x: self.tab_stack.setCurrentIndex(0))
-        self.enginepage_button.clicked.connect(lambda x: self.tab_stack.setCurrentIndex(1))
-        self.otherpage_button.clicked.connect(lambda x: self.tab_stack.setCurrentIndex(2))
+        self.boardpage_button.clicked.connect(lambda x: self._change_page(0))
+        self.enginepage_button.clicked.connect(lambda x: self._change_page(1))
+        self.otherpage_button.clicked.connect(lambda x: self._change_page(2))
 
         self.tab_stack.setCurrentIndex(0)
         self.boardpage_button.setChecked(True)
 
         self.analysetoggle_button.clicked.connect(lambda x: self.start_analysis() if x else self.stop_analysis())
+
+        self.setpiece_buttons = [
+            self.setnone_button,
+            self.setpawn_button,
+            self.setknight_button,
+            self.setbishop_button,
+            self.setrook_button,
+            self.setqueen_button,
+            self.setking_button]
+        for i in range(7):
+            self.setpiece_buttons[i].clicked.connect(lambda x,i=i:self._set_piece_button_pressed(i,x))
+
+        self.fen_edit.editingFinished.connect(lambda:self._set_fen(self.fen_edit.text()))
+
+
+        self.undomove_button.clicked.connect(lambda x:self.board_widget.undo_move())
+        self. undoall_button.clicked.connect(lambda x:self.board_widget.undo_all())
+        self.redomove_button.clicked.connect(lambda x:self.board_widget.redo_move())
+        self. redoall_button.clicked.connect(lambda x:self.board_widget.redo_all())
+
+        self._update_board_widgets()
 
     def _current_engine(self):
         # returns the current engine used
@@ -50,7 +71,7 @@ class AnalyseWidget(QWidget):
         # we assume that all engines only follow the uci protocol. This is checked when selecting the engine
 
         # create a function to fill the label with the correct value
-        func = lambda label,split,value: label.setText(split[split.index(value)+1] if value in split else '')
+        func = lambda label,split,value: label.setText(split[split.index(value)+1] if value in split else label.text())
 
         # split the string
         split = line.split()
@@ -69,6 +90,11 @@ class AnalyseWidget(QWidget):
         elif 'score' in split:
             self._update_score(mate=split[split.index('score')+2])
 
+    def _change_page(self, index):
+        # disable piece setting
+        self._set_piece_button_pressed(0,False)
+        self.tab_stack.setCurrentIndex(index)
+
     def _retrieve_search_fen_and_moves(self):
         # retrieves the fen and moves which will be given to the engine in the format
         # setposition fen {fen} moves {moves}
@@ -84,6 +110,34 @@ class AnalyseWidget(QWidget):
     def _update_score(self, score=None, mate=None):
         # update the score display
         pass
+
+    def _set_piece_button_pressed(self, piece, state):
+        if state:
+            self.stop_analysis()
+            for i in range(7):
+                if i is not piece:
+                    self.setpiece_buttons[i].setChecked(False)
+            self.board_widget.set_piece_placed(piece)
+        else:
+            for i in range(7):
+                self.setpiece_buttons[i].setChecked(False)
+            self.board_widget.set_piece_placed(None)
+    def _castling_rights_change(self):
+        pass
+    def _update_board_widgets(self):
+        self.fen_edit.setText(self.board_widget.board.fen())
+    def _set_fen(self, fen):
+        try:
+            self.board_widget.board.set_fen(fen)
+        except:
+            pass
+        self._update_board_widgets()
+        self._board_changed()
+        self.board_widget.refresh_board()
+    def _board_changed(self):
+        self._update_search()
+        self._update_board_widgets()
+
 
     def stop_analysis(self):
         # stop the analysis
@@ -150,3 +204,8 @@ class AnalyseWidget(QWidget):
     def resizeEvent(self, e):
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
         self.boardroot_frame.setMaximumWidth(self.boardroot_frame.height())
+
+        for i in range(6):
+            width = self.setpiece_buttons[i].width()
+            self.setpiece_buttons[i].setMinimumHeight(width)
+            self.setpiece_buttons[i].setMaximumHeight(width)
