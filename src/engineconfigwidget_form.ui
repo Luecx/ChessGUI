@@ -760,6 +760,10 @@ font-size: 14px;</string>
 
 .QLabel{
 	background-color: rgb(41, 45, 56);	
+}
+
+.QRadioButton{
+	background-color: rgb(41, 45, 56);	
 }</string>
            </property>
            <property name="frameShape">
