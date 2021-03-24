@@ -21,7 +21,7 @@ class AnalyseWidget(QWidget):
         uic.loadUi(path, self)
 
         self.board_widget = BoardWidget()
-        self.board_widget.listen(lambda x:self._update_search())
+        self.board_widget.listen(lambda x:self._board_changed())
 
         self.gridLayout.addWidget(self.board_widget, 0, 0)
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
@@ -34,6 +34,13 @@ class AnalyseWidget(QWidget):
         self.boardpage_button.setChecked(True)
 
         self.analysetoggle_button.clicked.connect(lambda x: self.start_analysis() if x else self.stop_analysis())
+
+        self.setpiece_buttons = [self.setpawn_button, self.setknight_button, self.setbishop_button, self.setrook_button, self.setqueen_button, self.setking_button]
+        for i in range(6):
+            self.setpiece_buttons[i].clicked.connect(lambda x,i=i:self._set_piece_button_pressed(i,x))
+
+        self.fen_edit.editingFinished.connect(lambda:self._set_fen(self.fen_edit.text()))
+        self._update_board_widgets()
 
     def _current_engine(self):
         # returns the current engine used
@@ -50,7 +57,7 @@ class AnalyseWidget(QWidget):
         # we assume that all engines only follow the uci protocol. This is checked when selecting the engine
 
         # create a function to fill the label with the correct value
-        func = lambda label,split,value: label.setText(split[split.index(value)+1] if value in split else '')
+        func = lambda label,split,value: label.setText(split[split.index(value)+1] if value in split else label.text())
 
         # split the string
         split = line.split()
@@ -84,6 +91,31 @@ class AnalyseWidget(QWidget):
     def _update_score(self, score=None, mate=None):
         # update the score display
         pass
+
+    def _set_piece_button_pressed(self, piece, state):
+        if state:
+            for i in range(6):
+                if i is not piece:
+                    self.setpiece_buttons[i].setChecked(False)
+        else:
+            for i in range(6):
+                self.setpiece_buttons[i].setChecked(False)
+    def _castling_rights_change(self):
+        pass
+    def _update_board_widgets(self):
+        self.fen_edit.setText(self.board_widget.board.fen())
+    def _set_fen(self, fen):
+        try:
+            self.board_widget.board.set_fen(fen)
+        except:
+            pass
+        self._update_board_widgets()
+        self._board_changed()
+        self.board_widget.refresh_pieces()
+    def _board_changed(self):
+        self._update_search()
+        self._update_board_widgets()
+
 
     def stop_analysis(self):
         # stop the analysis
@@ -150,3 +182,8 @@ class AnalyseWidget(QWidget):
     def resizeEvent(self, e):
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
         self.boardroot_frame.setMaximumWidth(self.boardroot_frame.height())
+
+        for i in range(6):
+            width = self.setpiece_buttons[i].width()
+            self.setpiece_buttons[i].setMinimumHeight(width)
+            self.setpiece_buttons[i].setMaximumHeight(width)

@@ -14,7 +14,7 @@ class BoardWidget(QWidget):
         self.cellSize  = 100
         self.lightCell = QColor(0xecdab9)
         self.darkCell  = QColor(0xae8a68)
-        self.board     = chess.Board()
+        self.board     = chess.Board("6k1/5p2/6p1/8/7p/8/6PP/6K1 b - - 0 1")
         self.clickedAt = None
         self._create_board()
         self._create_pieces()
@@ -29,7 +29,7 @@ class BoardWidget(QWidget):
     def resizeEvent(self, e):
         x, y = e.size().height(), e.size().width()
         self.cellSize = min(x, y) // 8
-        self._refresh_pieces()
+        self.refresh_pieces()
         self._refresh_board()
           
     def _get_index(self, square):
@@ -46,7 +46,7 @@ class BoardWidget(QWidget):
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.resize(self.cellSize * 8, self.cellSize * 8)
 
-    def _refresh_pieces(self):
+    def refresh_pieces(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
@@ -75,7 +75,7 @@ class BoardWidget(QWidget):
                move = chess.Move(self.clickedAt, square)
                if move in self.board.legal_moves:
                    self.board.push(move)
-                   self._refresh_pieces()
+                   self.refresh_pieces()
                    self.board_state_changed()
                self.clickedAt = None 
 

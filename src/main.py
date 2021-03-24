@@ -5,7 +5,7 @@ import res
 import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
-from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
+from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent, QPoint
 from PyQt5.QtGui import QCursor
 from PyQt5 import uic
 from analysewidget import AnalyseWidget
@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
             "font-family: 'Segoe UI'; "
             "font-weight:400;")
         self.title_frame.setMouseTracking(True)
+        self.drag_root_position = QPoint()
 
     def setup_central_widgets(self):
 
