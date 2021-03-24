@@ -19,6 +19,7 @@ class BoardWidget(QWidget):
         self._create_board()
         self._create_pieces()
         self.listener  = None
+        self.piece_type_placing = None
         self.move_memory = []
 
     def _next_color(self, color):
@@ -68,14 +69,32 @@ class BoardWidget(QWidget):
             self.pieces[square].move(x,y)
             self.pieces[square].setPixmap(QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
+    def set_piece_placed(self, piece_type=None):
+        self.piece_type_placing = piece_type
 
     def mousePressEvent(self, e):
+
+        if self.piece_type_placing is not None:
+            square = self._get_square(e.x(), e.y())
+            if self.piece_type_placing == 0:
+                self.board.remove_piece_at(square)
+            else:
+                if e.button() == Qt.LeftButton:
+                    self.board.set_piece_at(square, chess.Piece(self.piece_type_placing, chess.WHITE))
+                elif e.button() == Qt.RightButton:
+                    self.board.set_piece_at(square, chess.Piece(self.piece_type_placing, chess.BLACK))
+
+            self.notify_listener()
+            self.refresh_board()
+            return
+
+
         if e.button() == Qt.LeftButton:
             square = self._get_square(e.x(), e.y())
             if self.clickedAt is None:
                 if self.board.piece_at(square) is not None and self.board.turn == self.board.piece_at(square).color:
                     self.clickedAt = square
-                    self.pieces[self.clickedAt].setStyleSheet('border: 2px solid red; background-color:transparent;')
+                    self.pieces[self.clickedAt].setStyleSheet('border: 5px solid gray; border-radius:5px; background-color:transparent;')
             else:
                 self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
                 self.move_from_to(self.clickedAt, square)
@@ -232,5 +251,6 @@ class BoardWidget(QWidget):
 
             label = QLabel(self)
             label.move(x,y)
+            label.setAlignment(Qt.AlignCenter)
             label.setStyleSheet("background-color:transparent")
             self.pieces.append(label)

@@ -26,17 +26,24 @@ class AnalyseWidget(QWidget):
         self.gridLayout.addWidget(self.board_widget, 0, 0)
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
         self.boardroot_frame.setMaximumWidth(self.boardroot_frame.height())
-        self.boardpage_button.clicked.connect(lambda x: self.tab_stack.setCurrentIndex(0))
-        self.enginepage_button.clicked.connect(lambda x: self.tab_stack.setCurrentIndex(1))
-        self.otherpage_button.clicked.connect(lambda x: self.tab_stack.setCurrentIndex(2))
+        self.boardpage_button.clicked.connect(lambda x: self._change_page(0))
+        self.enginepage_button.clicked.connect(lambda x: self._change_page(1))
+        self.otherpage_button.clicked.connect(lambda x: self._change_page(2))
 
         self.tab_stack.setCurrentIndex(0)
         self.boardpage_button.setChecked(True)
 
         self.analysetoggle_button.clicked.connect(lambda x: self.start_analysis() if x else self.stop_analysis())
 
-        self.setpiece_buttons = [self.setpawn_button, self.setknight_button, self.setbishop_button, self.setrook_button, self.setqueen_button, self.setking_button]
-        for i in range(6):
+        self.setpiece_buttons = [
+            self.setnone_button,
+            self.setpawn_button,
+            self.setknight_button,
+            self.setbishop_button,
+            self.setrook_button,
+            self.setqueen_button,
+            self.setking_button]
+        for i in range(7):
             self.setpiece_buttons[i].clicked.connect(lambda x,i=i:self._set_piece_button_pressed(i,x))
 
         self.fen_edit.editingFinished.connect(lambda:self._set_fen(self.fen_edit.text()))
@@ -83,6 +90,11 @@ class AnalyseWidget(QWidget):
         elif 'score' in split:
             self._update_score(mate=split[split.index('score')+2])
 
+    def _change_page(self, index):
+        # disable piece setting
+        self._set_piece_button_pressed(0,False)
+        self.tab_stack.setCurrentIndex(index)
+
     def _retrieve_search_fen_and_moves(self):
         # retrieves the fen and moves which will be given to the engine in the format
         # setposition fen {fen} moves {moves}
@@ -101,12 +113,15 @@ class AnalyseWidget(QWidget):
 
     def _set_piece_button_pressed(self, piece, state):
         if state:
-            for i in range(6):
+            self.stop_analysis()
+            for i in range(7):
                 if i is not piece:
                     self.setpiece_buttons[i].setChecked(False)
+            self.board_widget.set_piece_placed(piece)
         else:
-            for i in range(6):
+            for i in range(7):
                 self.setpiece_buttons[i].setChecked(False)
+            self.board_widget.set_piece_placed(None)
     def _castling_rights_change(self):
         pass
     def _update_board_widgets(self):
