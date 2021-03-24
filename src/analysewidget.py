@@ -71,10 +71,11 @@ class AnalyseWidget(QWidget):
         # we assume that all engines only follow the uci protocol. This is checked when selecting the engine
 
         # create a function to fill the label with the correct value
-        func = lambda label,split,value: label.setText(split[split.index(value)+1] if value in split else label.text())
+        func = lambda label, split, value: label.setText(
+            split[split.index(value) + 1] if value in split and len(split) > split.index(value) + 1 else label.text())
 
         # split the string
-        split = line.split()
+        split = line.lower().split()
 
         # write all the labels
         func(self.   nodes_label, split, 'nodes')
@@ -84,11 +85,41 @@ class AnalyseWidget(QWidget):
         func(self.    time_label, split, 'time')
         func(self.  tbhits_label, split, 'tbhits')
 
+
         # update the score
-        if 'mate' in split:
+        if 'mate' in split and len(split) > split.index('mate') + 1:
             self._update_score(mate=split[split.index('mate')+1])
-        elif 'score' in split:
-            self._update_score(mate=split[split.index('score')+2])
+        elif 'score' in split and len(split) > split.index('score') + 1:
+            self._update_score(mate=split[split.index('score')+1])
+
+        # processing the pv
+        pv_index = 0
+        if 'multipv' in split and split.index('multipv')+1 < len(split):
+            pv_index = int(split[split.index('multipv')+1])
+
+        # ignore more than 5 pvs
+        if pv_index >= 5:
+            return
+
+        # return if there is no pv or the pv is empty
+        if 'pv' not in split or split[-1] == 'pv':
+            return
+
+        # get the pv
+        pv = split[split.index('pv') + 1:]
+
+        # if the pv is empty, dont do anything
+        if len(pv) == 0:
+            return
+
+        # make sure there are enough arrows in the board widget
+        if len(self.board_widget.arrows) < 5:
+            self.board_widget.arrows += [BoardArrow(0,0,0)] * (5 - len(self.board_widget.arrows))
+
+        # get the first move and display that as an arrow
+        move = chess.Move.from_uci(pv[0])
+        self.board_widget.arrows[pv_index] = BoardArrow(25 - pv_index * 3, move.from_square, move.to_square)
+
 
     def _change_page(self, index):
         # disable piece setting

@@ -9,7 +9,7 @@
 				<min>1</min>
 				<max>65536</max>
 				<default>16</default>
-				<value>512</value>
+				<value>630</value>
 			</Hash>
 			<Threads>
 				<type>spin</type>

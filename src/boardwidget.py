@@ -1,9 +1,21 @@
+import math
+
 from PyQt5.QtWidgets import QWidget, QLabel, QSizePolicy, QDialog, QGridLayout, QPushButton
-from PyQt5.QtGui import QColor, QPixmap, QIcon
+from PyQt5.QtGui import QColor, QPixmap, QIcon, QColor, QBrush, QPainter, QPen, QPolygon
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint, QSize
 import chess
 import res
 import time
+
+class BoardArrow:
+    width = 30
+    sq_from = 0
+    sq_to = 0
+
+    def __init__(self, width, sq_from, sq_to):
+        self.width = width
+        self.sq_to = sq_to
+        self.sq_from = sq_from
 
 class BoardWidget(QWidget):
     def __init__(self, *args, **kwargs):
@@ -11,16 +23,22 @@ class BoardWidget(QWidget):
         self._config()
 
     def _config(self):
-        self.cellSize  = 100
+        self.cellSize  = self.width() // 8
         self.lightCell = QColor(0xecdab9)
         self.darkCell  = QColor(0xae8a68)
-        self.board     = chess.Board("6k1/5p2/6p1/8/7p/8/6PP/6K1 b - - 0 1")
+        self.board     = chess.Board()
+        self.arrow_panel = QLabel(self)
+        self.boardPixmap = QPixmap(":/boards/images/board.png")
         self.clickedAt = None
-        self._create_board()
         self._create_pieces()
         self.listener  = None
         self.piece_type_placing = None
         self.move_memory = []
+        self.arrows      = []
+        self.refresh_board()
+
+        self.paintEvent             = lambda e : self.paintBackground()
+        self.arrow_panel.paintEvent = lambda e : self.paintArrows()
 
     def _next_color(self, color):
         if color == self.darkCell:
@@ -32,8 +50,8 @@ class BoardWidget(QWidget):
         x, y = e.size().height(), e.size().width()
         self.cellSize = min(x, y) // 8
         self.refresh_board()
-        self._refresh_board()
-          
+        self.arrow_panel.resize(self.width(), self.height())
+
     def _get_index(self, square):
         return square // 8, square % 8
 
@@ -50,24 +68,89 @@ class BoardWidget(QWidget):
     def _piece_path(self, piece):
         return f'://pieces//images//{self._get_color_label(piece) + piece.symbol().lower()}.png'
 
-    def _refresh_board(self):
-        self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
-        self.boardLabel.setPixmap(self.boardPixmap)
-        self.boardLabel.resize(self.cellSize * 8, self.cellSize * 8)
+    def paintBackground(self):
+        painter = QPainter(self)
+        painter.drawPixmap(self.rect(), self.boardPixmap)
+
+
+    def paintArrows(self):
+
+        def transform(x, y, r, x0, y0):
+            return QPoint(x0 + math.cos(r) * x - math.sin(r) * y, y0 + math.sin(r) * x + math.cos(r) * y)
+
+        self.arrow_panel.setStyleSheet("background-color:transparent;")
+        self.arrow_panel.raise_()
+
+        painter = QPainter(self.arrow_panel)
+        # drawing the arrows
+
+        # setting the brush for arrows
+        brush = QBrush(QColor(100, 100, 100, 200))
+        painter.setBrush(brush)
+
+        # enable antialising
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # remove the border
+        painter.setPen(QPen(QColor(0,0,0,0)))
+
+        # define some arrow constants
+        arrow_head_length = self.width() / 8
+
+        for arrow in self.arrows:
+            if arrow.width <= 0:
+                continue
+
+            arrow_head_width = arrow.width * 3
+
+            x_from  , y_from = self._get_coordinate(arrow.sq_from)
+            x_to    , y_to   = self._get_coordinate(arrow.sq_to)
+
+            distance = math.sqrt((y_from - y_to) ** 2 + (x_from - x_to) ** 2)
+            width    = arrow.width
+            angle    = math.atan2(y_to - y_from, x_to - x_from) - math.pi / 2
+            x0 = x_from + self.cellSize // 2
+            y0 = y_from + self.cellSize // 2
+
+            # draw an arrow. first create a polygon which will receive some points
+            polygon = QPolygon()
+            polygon.append(transform( width             / 2, 0                              ,angle,x0,y0))
+            polygon.append(transform( width             / 2, distance - arrow_head_length   ,angle,x0,y0))
+            polygon.append(transform( arrow_head_width  / 2, distance - arrow_head_length   ,angle,x0,y0))
+            polygon.append(transform(                     0, distance                       ,angle,x0,y0))
+            polygon.append(transform(-arrow_head_width  / 2, distance - arrow_head_length   ,angle,x0,y0))
+            polygon.append(transform(-width             / 2, distance - arrow_head_length   ,angle,x0,y0))
+            polygon.append(transform(-width             / 2, 0                              ,angle,x0,y0))
+
+            painter.drawPolygon(polygon)
+
+
+
+    def _create_pieces(self):
+        self.pieces = []
+        for square in range(64):
+            x, y = self._get_coordinate(square)
+            label = QLabel(self)
+            label.move(x,y)
+            label.setAlignment(Qt.AlignCenter)
+            label.setStyleSheet("background-color:transparent")
+            self.pieces.append(label)
 
     def refresh_board(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
+            x, y = self._get_coordinate(square)
+
+            self.pieces[square].move(x, y)
 
             if piece is None:
                 self.pieces[square].clear()
                 continue
 
-            x, y = self._get_coordinate(square)
-
-            self.pieces[square].resize(self.cellSize,self.cellSize)
-            self.pieces[square].move(x,y)
-            self.pieces[square].setPixmap(QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.pieces[square].resize(self.cellSize, self.cellSize)
+            self.pieces[square].setPixmap(
+                QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio,
+                                                        Qt.SmoothTransformation))
 
     def set_piece_placed(self, piece_type=None):
         self.piece_type_placing = piece_type
@@ -100,7 +183,6 @@ class BoardWidget(QWidget):
                 self.move_from_to(self.clickedAt, square)
                 self.notify_listener()
                 self.clickedAt = None
-
 
     def show_promotion_dialog(self):
         # creates a promotion dialog to select a piece and return that
@@ -194,8 +276,9 @@ class BoardWidget(QWidget):
         self.anim = QPropertyAnimation(label, b"pos")
         self.anim.setDuration(200)
         self.anim.setStartValue(QPoint(x_from, y_from))
-        self.anim.setEndValue(QPoint(x_to,y_to))
+        self.anim.setEndValue(QPoint(x_to, y_to))
         self.anim.start()
+
         self.move_memory = []
 
     def undo_move(self):
@@ -233,24 +316,3 @@ class BoardWidget(QWidget):
 
     def listen(self, func):
         self.listener = func
-
-    def _create_board(self):
-        self.boardLabel  = QLabel(self)
-        self.boardPixmap = QPixmap(":/boards/images/board.png")
-        self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
-        self.boardLabel.setPixmap(self.boardPixmap)
-        self.boardLabel.move(0, 0)
-        self.boardLabel.setStyleSheet("background-color: black;")
-
-    def _create_pieces(self):
-        self.pieces = []
-        for square in chess.SQUARES:
-            piece = self.board.piece_at(square)
-
-            x, y = self._get_coordinate(square)
-
-            label = QLabel(self)
-            label.move(x,y)
-            label.setAlignment(Qt.AlignCenter)
-            label.setStyleSheet("background-color:transparent")
-            self.pieces.append(label)

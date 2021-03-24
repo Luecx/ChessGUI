@@ -155,6 +155,8 @@ class Engine:
             # line sending was not successfully
             return False
 
+        # print(f"[SENDING] {line}")
+
         # write the line to the stdin
         self.process.stdin.write(line + "\n")
 
@@ -240,20 +242,46 @@ class Engine:
         # remember we stopped searching
         self.is_searching = False
 
-        # send the stop command
+        # send the stop command and check if the engine is ready
         if int(self.settings['proto']) == Protocol.UCI:
             self.send_line("stop")
+            self.send_line("isready")
         elif int(self.settings['proto']) == Protocol.WINBOARD:
             pass
 
-        # need to sleep before sending a few commands
-        time.sleep(0.05)
+        # measure the time it takes. If the engine does not properly handle the protocols, we will notify the user
+        start_time = time.perf_counter()
+
+        while True:
+            # check if retrieving information took longer than a full second -> crash or invalid
+            if time.perf_counter() - start_time > 1:
+                updateStatusBar("Engine timeout!")
+                self.exit()
+                return
+            # poll from the queue to read the buffer
+            try:
+                line = self.queue.get_nowait()
+            except Empty:
+                # if nothing new has been received, sleep for a bit
+                time.sleep(0.01)
+
+                # continue to the next iteration
+                continue
+
+            if int(self.settings['proto']) == Protocol.UCI:
+                if 'readyok' in line:
+                    break
+            elif int(self.settings['proto']) == Protocol.WINBOARD:
+                pass
+
+
 
     def _enqueue_output(self, out, queue):
         # thread awaits outputs from the engine
         for line in iter(out.readline, b''):
             # do not process empty lines
             if line:
+                # print(f"[READING] {line}")
                 # add it to the queue
                 queue.put(line)
                 # if someone is listening, notify him
