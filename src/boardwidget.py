@@ -39,7 +39,7 @@ class BoardWidget(QWidget):
         return 'w' if piece.color == chess.WHITE else 'b'
        
     def _piece_path(self, piece):
-        return f'..//assets//images//{self._get_color_label(piece) + piece.symbol()}.png'
+        return f'://pieces//images//{self._get_color_label(piece) + piece.symbol().lower()}.png'
 
     def _refresh_board(self):
         self.boardPixmap = self.boardPixmap.scaled(self.cellSize * 8, self.cellSize * 8)
