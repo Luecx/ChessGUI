@@ -74,29 +74,37 @@ class BoardWidget(QWidget):
            square = self._get_square(e.x(), e.y())
            
            if self.clickedAt is None:
-               if self.board.turn == self.board.piece_at(square).color:
+               if self.board.piece_at(square) is not None and self.board.turn == self.board.piece_at(square).color:
                    self.clickedAt = square
                    self.pieces[self.clickedAt].setStyleSheet('border: 2px solid red; background-color:transparent;')
            else:
-               move = chess.Move(self.clickedAt, square)
                self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
+               self.move(self.clickedAt, square)
                self.clickedAt = None
-               if move in self.board.legal_moves:
-                   self.board.push(move)
 
-                   x_from,y_from = self._get_coordinate(move.from_square)
-                   x_to  ,y_to   = self._get_coordinate(move.to_square)
+    def move(self, sq_from, sq_to):
+        available_moves = [x for x in self.board.legal_moves if x.from_square == sq_from and x.to_square == sq_to]
+        print(available_moves)
+        if len(available_moves) > 1:
+            return
+            # handle promotion
+        elif len(available_moves) < 1:
+            # no legal move
+            return
+        else:
+            move = available_moves[0]
+            self.board.push(move)
 
-                   self.refresh_pieces()
-                   label = self.pieces[move.to_square]
-                   self.anim = QPropertyAnimation(label, b"pos")
-                   self.anim.setDuration(240)
-                   self.anim.setStartValue(QPoint(x_from, y_from))
-                   self.anim.setEndValue(QPoint(x_to,y_to))
-                   self.anim.start()
-#                   time.sleep(0.3)
+            x_from,y_from = self._get_coordinate(move.from_square)
+            x_to  ,y_to   = self._get_coordinate(move.to_square)
 
-#                   self.board_state_changed()
+            self.refresh_pieces()
+            label = self.pieces[move.to_square]
+            self.anim = QPropertyAnimation(label, b"pos")
+            self.anim.setDuration(200)
+            self.anim.setStartValue(QPoint(x_from, y_from))
+            self.anim.setEndValue(QPoint(x_to,y_to))
+            self.anim.start()
 
     def board_state_changed(self):
         if self.listener is not None:
