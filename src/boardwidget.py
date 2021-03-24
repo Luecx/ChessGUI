@@ -36,6 +36,13 @@ class BoardWidget(QWidget):
     def _get_index(self, square):
         return square // 8, square % 8
 
+    def _get_coordinate(self, square):
+        i, j = self._get_index(square)
+        return round(j * self.cellSize), round((7-i) * self.cellSize)
+
+    def _get_square(self, x, y):
+        return x // self.cellSize + (7 - y // self.cellSize) * 8
+
     def _get_color_label(self, piece):
         return 'w' if piece.color == chess.WHITE else 'b'
        
@@ -51,48 +58,45 @@ class BoardWidget(QWidget):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
-            if piece is None: 
+            if piece is None:
                 self.pieces[square].clear()
                 continue
- 
 
-            i, j = self._get_index(chess.square_mirror(square))
+            x, y = self._get_coordinate(square)
 
             self.pieces[square].resize(self.cellSize,self.cellSize)
-            self.pieces[square].move(j * self.cellSize, i * self.cellSize)
+            self.pieces[square].move(x,y)
             self.pieces[square].setPixmap(QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
 
     def mousePressEvent(self, e):
         if e.button() == Qt.LeftButton:
-           i, j = e.y() // self.cellSize, e.x() // self.cellSize
-           square = chess.square_mirror(i * 8 + j)
+           square = self._get_square(e.x(), e.y())
            
            if self.clickedAt is None:
-               self.clickedAt = square 
-               self.clickedAti = i 
-               self.clickedAtj = j
-
+               if self.board.turn == self.board.piece_at(square).color:
+                   self.clickedAt = square
+                   self.pieces[self.clickedAt].setStyleSheet('border: 2px solid red; background-color:transparent;')
            else:
                move = chess.Move(self.clickedAt, square)
+               self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
+               self.clickedAt = None
                if move in self.board.legal_moves:
                    self.board.push(move)
 
-                   x_from = round(move.from_square %  8 * self.cellSize)
-                   y_from = round((7-move.from_square // 8) * self.cellSize)
-                   x_to   = round(move.  to_square %  8 * self.cellSize)
-                   y_to   = round((7-move.  to_square // 8) * self.cellSize)
+                   x_from,y_from = self._get_coordinate(move.from_square)
+                   x_to  ,y_to   = self._get_coordinate(move.to_square)
 
                    self.refresh_pieces()
                    label = self.pieces[move.to_square]
                    self.anim = QPropertyAnimation(label, b"pos")
-                   self.anim.setDuration(300)
+                   self.anim.setDuration(240)
                    self.anim.setStartValue(QPoint(x_from, y_from))
                    self.anim.setEndValue(QPoint(x_to,y_to))
                    self.anim.start()
 #                   time.sleep(0.3)
 
 #                   self.board_state_changed()
-               self.clickedAt = None 
 
     def board_state_changed(self):
         if self.listener is not None:
@@ -114,9 +118,9 @@ class BoardWidget(QWidget):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
-            i, j = self._get_index(chess.square_mirror(square))
+            x, y = self._get_coordinate(square)
 
             label = QLabel(self)
-            label.move(j * self.cellSize, i * self.cellSize)
+            label.move(x,y)
             label.setStyleSheet("background-color:transparent")
             self.pieces.append(label)
