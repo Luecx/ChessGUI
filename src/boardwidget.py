@@ -29,7 +29,7 @@ class BoardWidget(QWidget):
     def resizeEvent(self, e):
         x, y = e.size().height(), e.size().width()
         self.cellSize = min(x, y) // 8
-        self.refresh_pieces()
+        self.refresh_board()
         self._refresh_board()
           
     def _get_index(self, square):
@@ -53,7 +53,7 @@ class BoardWidget(QWidget):
         self.boardLabel.setPixmap(self.boardPixmap)
         self.boardLabel.resize(self.cellSize * 8, self.cellSize * 8)
 
-    def refresh_pieces(self):
+    def refresh_board(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
@@ -70,16 +70,16 @@ class BoardWidget(QWidget):
 
     def mousePressEvent(self, e):
         if e.button() == Qt.LeftButton:
-           square = self._get_square(e.x(), e.y())
-           
-           if self.clickedAt is None:
-               if self.board.piece_at(square) is not None and self.board.turn == self.board.piece_at(square).color:
-                   self.clickedAt = square
-                   self.pieces[self.clickedAt].setStyleSheet('border: 2px solid red; background-color:transparent;')
-           else:
-               self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
-               self.move_from_to(self.clickedAt, square)
-               self.clickedAt = None
+            square = self._get_square(e.x(), e.y())
+            if self.clickedAt is None:
+                if self.board.piece_at(square) is not None and self.board.turn == self.board.piece_at(square).color:
+                    self.clickedAt = square
+                    self.pieces[self.clickedAt].setStyleSheet('border: 2px solid red; background-color:transparent;')
+            else:
+                self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
+                self.move_from_to(self.clickedAt, square)
+                self.clickedAt = None
+
 
     def show_promotion_dialog(self):
         # creates a promotion dialog to select a piece and return that
@@ -104,10 +104,10 @@ class BoardWidget(QWidget):
             d.close()
 
         turn = self.board.turn
-        pieces = [  chess.Piece(chess.KNIGHT,turn),
-                    chess.Piece(chess.BISHOP,turn),
-                    chess.Piece(chess.ROOK,turn),
-                    chess.Piece(chess.QUEEN,turn)]
+        pieces = [  chess.Piece(chess.KNIGHT    ,turn),
+                    chess.Piece(chess.BISHOP    ,turn),
+                    chess.Piece(chess.ROOK      ,turn),
+                    chess.Piece(chess.QUEEN     ,turn)]
 
         for i in range(4):
             # add some chess board style
@@ -157,18 +157,7 @@ class BoardWidget(QWidget):
             return
 
         move = available_moves[0]
-        self.board.push(move)
-
-        x_from,y_from = self._get_coordinate(move.from_square)
-        x_to  ,y_to   = self._get_coordinate(move.to_square)
-
-        self.refresh_pieces()
-        label = self.pieces[move.to_square]
-        self.anim = QPropertyAnimation(label, b"pos")
-        self.anim.setDuration(200)
-        self.anim.setStartValue(QPoint(x_from, y_from))
-        self.anim.setEndValue(QPoint(x_to,y_to))
-        self.anim.start()
+        self.move_move(move)
 
     def move_move(self, move):
         if move not in self.board.legal_moves:
@@ -179,7 +168,7 @@ class BoardWidget(QWidget):
         x_from,y_from = self._get_coordinate(move.from_square)
         x_to  ,y_to   = self._get_coordinate(move.to_square)
 
-        self.refresh_pieces()
+        self.refresh_board()
         label = self.pieces[move.to_square]
         self.anim = QPropertyAnimation(label, b"pos")
         self.anim.setDuration(200)

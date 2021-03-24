@@ -111,7 +111,7 @@ class AnalyseWidget(QWidget):
             pass
         self._update_board_widgets()
         self._board_changed()
-        self.board_widget.refresh_pieces()
+        self.board_widget.refresh_board()
     def _board_changed(self):
         self._update_search()
         self._update_board_widgets()
