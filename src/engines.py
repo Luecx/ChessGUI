@@ -90,12 +90,18 @@ class Engine:
         # make sure the options are contained
         if 'options' not in self.settings or self.settings['options'] is None:
             self.settings['options'] = {}
-        # make sure we have no Nones inside the option values
+
+        # make sure we have no Nones inside the option values (defaults and values)
         for option in self.settings['options']:
-            if 'value' in option and option['value'] is None:
-                option['value'] = ''
-
-
+            if 'value' in self.settings['options'][option] and self.settings['options'][option]['value'] is None:
+                self.settings['options'][option]['value'] = ''
+            if 'default' in self.settings['options'][option] and self.settings['options'][option]['default'] is None:
+                self.settings['options'][option]['default'] = ''
+            if 'vals' in self.settings['options'][option]:
+                d = self.settings['options'][option]['vals']
+                while 'item' in d:
+                    d = d['item']
+                self.settings['options'][option]['vals'] = d
 
     def create_dict(self):
         # make sure we store the mapped integer of the protocol
@@ -278,7 +284,8 @@ class Engine:
                     break
             elif int(self.settings['proto']) == Protocol.WINBOARD:
                 pass
-
+        # wait another 0.1 seconds
+        time.sleep(0.1)
 
 
     def _enqueue_output(self, out, queue):
@@ -368,10 +375,16 @@ class Engine:
                 name = split[split.index('name') + 1]
                 if 'type' in line:
                     option['type'] = split[split.index('type') + 1]
+
+                    # reading min
                     if 'min' in line:
                         option['min'] = int(split[split.index('min') + 1])
+
+                    # reading max
                     if 'max' in line:
                         option['max'] = int(split[split.index('max') + 1])
+
+                    # reading default value
                     if option['type'] == 'string':
                         if 'default' in line:
                             try:
@@ -384,28 +397,20 @@ class Engine:
                                 option['default'] = int(split[split.index('default') + 1])
                             except:
                                 option['default'] = ''
+
+                    # reading values
                     if option['type'] == 'combo':
                         vals = []
-                        for i in range(split.index('var') + 1, len(split)):
-                            if split[i] in ['min', 'max', 'default']:
-                                break
-                            vals += [split[i]]
+                        for i in range(len(split) - 1):
+                            if split[i] == 'var':
+                                vals += [split[i+1]]
                         option['vals'] = vals
 
-                # make sure to still use the correct value
-                if name in self.settings['options']:
-                    if 'value' in self.settings['options'][name]:
-                        option['value'] = self.settings['options'][name]['value']
-                    else:
-                        try:
-                            option['value'] = option['default']
-                        except:
-                            pass 
-                else:
-                    try:
-                        option['value'] = option['default']
-                    except:
-                        pass 
+                # make sure to copy the old value
+                if name in self.settings['options'] and 'value' in self.settings['options'][name]:
+                    option['value'] = self.settings['options'][name]['value']
+                elif 'default' in option:
+                    option['value'] = option['default']
 
                 # place in new options list
                 new_options[name] = option
@@ -457,4 +462,5 @@ if __name__ == '__main__':
 
     eng = Engines()
     eng.read_xml("engines.xml")
-    print(eng.engines['Koivisto'].settings['options'])
+    print(eng.engines['Stockfish'].settings['options'])
+    eng.write_xml("engines.xml")
