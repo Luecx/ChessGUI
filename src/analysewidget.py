@@ -33,8 +33,10 @@ class AnalyseWidget(QWidget):
         self.tab_stack.setCurrentIndex(0)
         self.boardpage_button.setChecked(True)
 
+        # bind toggling the analyse
         self.analysetoggle_button.clicked.connect(lambda x: self.start_analysis() if x else self.stop_analysis())
 
+        # create a list of the set piece buttons
         self.setpiece_buttons = [
             self.setnone_button,
             self.setpawn_button,
@@ -43,16 +45,22 @@ class AnalyseWidget(QWidget):
             self.setrook_button,
             self.setqueen_button,
             self.setking_button]
+
+        # bind a function to each set piece button
         for i in range(7):
             self.setpiece_buttons[i].clicked.connect(lambda x,i=i:self._set_piece_button_pressed(i,x))
 
+        # bind a change to the fen input
         self.fen_edit.editingFinished.connect(lambda:self._set_fen(self.fen_edit.text()))
 
-
+        # bind functions to do and undo moves
         self.undomove_button.clicked.connect(lambda x:self.board_widget.undo_move())
         self. undoall_button.clicked.connect(lambda x:self.board_widget.undo_all())
         self.redomove_button.clicked.connect(lambda x:self.board_widget.redo_move())
         self. redoall_button.clicked.connect(lambda x:self.board_widget.redo_all())
+
+        # put all the pv buttons into one list
+        self.pv_buttons = [self.pv1_button,self.pv2_button,self.pv3_button,self.pv4_button,self.pv5_button]
 
         self._update_board_widgets()
 
@@ -121,6 +129,10 @@ class AnalyseWidget(QWidget):
         # get the first move and display that as an arrow
         move = chess.Move.from_uci(pv[0])
         self.board_widget.arrows[pv_index] = BoardArrow(25 - pv_index * 3, move.from_square, move.to_square)
+
+        # display the entire pv in the correct slot
+        pv_string = ' '.join(pv)
+        self.pv_buttons[pv_index].setText(pv_string)
 
 
     def _change_page(self, index):

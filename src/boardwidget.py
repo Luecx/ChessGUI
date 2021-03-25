@@ -37,8 +37,8 @@ class BoardWidget(QWidget):
         self.arrows      = []
         self.refresh_board()
 
-        self.paintEvent             = lambda e : self.paintBackground()
-        self.arrow_panel.paintEvent = lambda e : self.paintArrows()
+        self.paintEvent             = lambda e : self._paint_background()
+        self.arrow_panel.paintEvent = lambda e : self._paint_arrows()
 
     def _next_color(self, color):
         if color == self.darkCell:
@@ -68,12 +68,11 @@ class BoardWidget(QWidget):
     def _piece_path(self, piece):
         return f'://pieces//images//{self._get_color_label(piece) + piece.symbol().lower()}.png'
 
-    def paintBackground(self):
+    def _paint_background(self):
         painter = QPainter(self)
         painter.drawPixmap(self.rect(), self.boardPixmap)
 
-
-    def paintArrows(self):
+    def _paint_arrows(self):
 
         def transform(x, y, r, x0, y0):
             return QPoint(x0 + math.cos(r) * x - math.sin(r) * y, y0 + math.sin(r) * x + math.cos(r) * y)
@@ -94,14 +93,13 @@ class BoardWidget(QWidget):
         # remove the border
         painter.setPen(QPen(QColor(0,0,0,0)))
 
-        # define some arrow constants
-        arrow_head_length = self.width() / 8
 
         for arrow in self.arrows:
             if arrow.width <= 0:
                 continue
 
             arrow_head_width = arrow.width * 3
+            arrow_head_length = arrow_head_width
 
             x_from  , y_from = self._get_coordinate(arrow.sq_from)
             x_to    , y_to   = self._get_coordinate(arrow.sq_to)
@@ -123,8 +121,6 @@ class BoardWidget(QWidget):
             polygon.append(transform(-width             / 2, 0                              ,angle,x0,y0))
 
             painter.drawPolygon(polygon)
-
-
 
     def _create_pieces(self):
         self.pieces = []
@@ -157,6 +153,7 @@ class BoardWidget(QWidget):
 
     def mousePressEvent(self, e):
 
+        # for placing a piece on the board
         if self.piece_type_placing is not None:
             square = self._get_square(e.x(), e.y())
             if self.piece_type_placing == 0:
@@ -169,15 +166,45 @@ class BoardWidget(QWidget):
 
             self.notify_listener()
             self.refresh_board()
-            return
 
-
-        if e.button() == Qt.LeftButton:
+        # for normal move recognition
+        elif e.button() == Qt.LeftButton:
             square = self._get_square(e.x(), e.y())
             if self.clickedAt is None:
-                if self.board.piece_at(square) is not None and self.board.turn == self.board.piece_at(square).color:
-                    self.clickedAt = square
-                    self.pieces[self.clickedAt].setStyleSheet('border: 5px solid gray; border-radius:5px; background-color:transparent;')
+                # check if there is only a single valid move to this specific square (does consider promotions)
+                if len(set(x.from_square + 64 * x.to_square for x in self.board.legal_moves if x.to_square == square)) == 1:
+                    move = [x for x in self.board.legal_moves if x.to_square == square][0]
+                    self.move_from_to(move.from_square, move.to_square)
+                    self.notify_listener()
+                    return
+
+                # dont select the square if there is no piece on it of the correct color
+                if self.board.piece_at(square) is None or self.board.turn != self.board.piece_at(square).color:
+                    return
+
+                # get the moves from that square
+                moves           = [x for x in self.board.legal_moves if x.from_square == square]
+
+                # if there is no legal move, do not select it
+                if len(moves) == 0:
+                    return
+
+                # if there is only a single move, do it
+                if len(moves) == 1:
+                    self.move_move(moves[0])
+                    self.notify_listener()
+                    return
+
+                # if there are multiple promotions, still do the move and request the promo piece
+                if len(set(x.from_square + 64 * x.to_square for x in moves if x.from_square == square)) == 1:
+                    self.move_from_to(moves[0].from_square, moves[0].to_square)
+                    self.notify_listener()
+                    return
+
+                # otherwise select the square
+                self.clickedAt = square
+                self.pieces[self.clickedAt].setStyleSheet('border: 5px solid gray; border-radius:5px; background-color:transparent;')
+                return
             else:
                 self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
                 self.move_from_to(self.clickedAt, square)
@@ -278,6 +305,7 @@ class BoardWidget(QWidget):
         self.anim.setStartValue(QPoint(x_from, y_from))
         self.anim.setEndValue(QPoint(x_to, y_to))
         self.anim.start()
+        # self.anim.finished.connect(self.notify_listener)
 
         self.move_memory = []
 
