@@ -69,6 +69,8 @@ class AnalyseWidget(QWidget):
 
     def _process_engine_line(self, line):
         # we assume that all engines only follow the uci protocol. This is checked when selecting the engine
+        if 'info' not in line:
+            return
 
         # create a function to fill the label with the correct value
         func = lambda label, split, value: label.setText(

@@ -90,6 +90,12 @@ class Engine:
         # make sure the options are contained
         if 'options' not in self.settings or self.settings['options'] is None:
             self.settings['options'] = {}
+        # make sure we have no Nones inside the option values
+        for option in self.settings['options']:
+            if 'value' in option and option['value'] is None:
+                option['value'] = ''
+
+
 
     def create_dict(self):
         # make sure we store the mapped integer of the protocol
@@ -155,8 +161,6 @@ class Engine:
             # line sending was not successfully
             return False
 
-        # print(f"[SENDING] {line}")
-
         # write the line to the stdin
         self.process.stdin.write(line + "\n")
 
@@ -170,7 +174,8 @@ class Engine:
         # sends the options to the engine
         if int(self.settings['proto']) == Protocol.UCI:
             for option in self.settings['options']:
-                self.send_line(f'setoption name {option} value {self.settings["options"][option]["value"]}')
+                if 'value' in self.settings['options'][option] and self.settings['options'][option]['value'] is not None:
+                    self.send_line(f'setoption name {option} value {self.settings["options"][option]["value"]}')
         elif int(self.settings['proto']) == Protocol.WINBOARD:
             pass
 

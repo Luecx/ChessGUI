@@ -92,11 +92,11 @@ class StringOptionWidget(QWidget):
         self.name_label.setMaximumWidth(100)
         self.name_label.setMinimumWidth(100)
 
-        entry = QLineEdit(self)
-        entry.setText(default)
-        entry.textChanged.connect(self._change_value)
+        self.entry = QLineEdit(self)
+        self.entry.setText(default)
+        self.entry.textChanged.connect(self._change_value)
         hbox.addWidget(self.name_label)
-        hbox.addWidget(entry)
+        hbox.addWidget(self.entry)
 
         self.setLayout(hbox)
         self._change_value(init)
@@ -105,7 +105,7 @@ class StringOptionWidget(QWidget):
         self._change_value(self.default)
 
     def _change_value(self, value):
-        self.label.setText(str(value))
+        self.entry.setText(str(value))
         self.listener(self.name, str(value))
 
 
