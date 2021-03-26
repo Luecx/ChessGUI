@@ -9,7 +9,7 @@
 				<min>1</min>
 				<max>65536</max>
 				<default>16</default>
-				<value>630</value>
+				<value>18</value>
 			</Hash>
 			<Threads>
 				<type>spin</type>
@@ -25,4 +25,9 @@
 			</SyzygyPath>
 		</options>
 	</NewEngine1>
+	<NewEngine2>
+		<bin/>
+		<proto>1</proto>
+		<options/>
+	</NewEngine2>
 </root>

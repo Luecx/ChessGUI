@@ -75,7 +75,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>30</width>
+       <width>40</width>
        <height>0</height>
       </size>
      </property>
@@ -91,6 +91,33 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QGridLayout" name="evalbar_layout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMaximumSize</enum>
+        </property>
+        <property name="horizontalSpacing">
+         <number>0</number>
+        </property>
+       </layout>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -257,7 +284,7 @@ QPushButton:checked{
 </string>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="boardpage_widget">
          <property name="styleSheet">

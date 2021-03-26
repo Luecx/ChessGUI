@@ -8,6 +8,7 @@ from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent
 from PyQt5 import uic
 from boardwidget import *
 from engines import *
+from evalbar import EvalBar
 from util import getMainWindow
 
 
@@ -62,6 +63,10 @@ class AnalyseWidget(QWidget):
         # put all the pv buttons into one list
         self.pv_buttons = [self.pv1_button,self.pv2_button,self.pv3_button,self.pv4_button,self.pv5_button]
 
+        # add the eval bar
+        self.evalBar = EvalBar(self.frame_3)
+        self.evalbar_layout.addWidget(self.evalBar,0,0)
+
         self._update_board_widgets()
 
     def _current_engine(self):
@@ -99,8 +104,8 @@ class AnalyseWidget(QWidget):
         # update the score
         if 'mate' in split and len(split) > split.index('mate') + 1:
             self._update_score(mate=split[split.index('mate')+1])
-        elif 'score' in split and len(split) > split.index('score') + 1:
-            self._update_score(mate=split[split.index('score')+1])
+        elif 'score' in split and len(split) > split.index('score') + 2:
+            self._update_score(score=split[split.index('score')+2])
 
         # processing the pv
         pv_index = 0
@@ -134,7 +139,6 @@ class AnalyseWidget(QWidget):
         pv_string = ' '.join(pv)
         self.pv_buttons[pv_index].setText(pv_string)
 
-
     def _change_page(self, index):
         # disable piece setting
         self._set_piece_button_pressed(0,False)
@@ -154,6 +158,12 @@ class AnalyseWidget(QWidget):
 
     def _update_score(self, score=None, mate=None):
         # update the score display
+        if score != None:
+            print(int(score) * (1 if self.board_widget.board.turn else -1))
+            self.evalBar.set_eval(int(score) * (1 if self.board_widget.board.turn else -1))
+        else:
+            pass
+            # self.evalBar.set_eval((100000+int(mate))  * (1 if self.board_widget.board.turn else -1))
         pass
 
     def _set_piece_button_pressed(self, piece, state):
@@ -248,7 +258,7 @@ class AnalyseWidget(QWidget):
 
     def resizeEvent(self, e):
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())
-        self.boardroot_frame.setMaximumWidth(self.boardroot_frame.height())
+        # self.boardroot_frame.setMaximumWidth(self.boardroot_frame.height())
 
         for i in range(6):
             width = self.setpiece_buttons[i].width()
