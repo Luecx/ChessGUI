@@ -110,7 +110,7 @@ class AnalyseWidget(QWidget):
         # processing the pv
         pv_index = 0
         if 'multipv' in split and split.index('multipv')+1 < len(split):
-            pv_index = int(split[split.index('multipv')+1])
+            pv_index = int(split[split.index('multipv')+1]) - 1
 
         # ignore more than 5 pvs
         if pv_index >= 5:
@@ -133,7 +133,7 @@ class AnalyseWidget(QWidget):
 
         # get the first move and display that as an arrow
         move = chess.Move.from_uci(pv[0])
-        self.board_widget.arrows[pv_index] = BoardArrow(25 - pv_index * 3, move.from_square, move.to_square)
+        self.board_widget.arrows[pv_index] = BoardArrow(0.3 - pv_index * 0.05, move.from_square, move.to_square)
 
         # display the entire pv in the correct slot
         pv_string = ' '.join(pv)
@@ -159,11 +159,9 @@ class AnalyseWidget(QWidget):
     def _update_score(self, score=None, mate=None):
         # update the score display
         if score != None:
-            print(int(score) * (1 if self.board_widget.board.turn else -1))
             self.evalBar.set_eval(int(score) * (1 if self.board_widget.board.turn else -1))
         else:
-            pass
-            # self.evalBar.set_eval((100000+int(mate))  * (1 if self.board_widget.board.turn else -1))
+            self.evalBar.set_eval((100000+int(mate))  * (1 if self.board_widget.board.turn else -1))
         pass
 
     def _set_piece_button_pressed(self, piece, state):
@@ -184,11 +182,12 @@ class AnalyseWidget(QWidget):
     def _set_fen(self, fen):
         try:
             self.board_widget.board.set_fen(fen)
+            self._update_board_widgets()
+            self._board_changed()
+            self.board_widget.refresh_board()
         except:
             pass
-        self._update_board_widgets()
-        self._board_changed()
-        self.board_widget.refresh_board()
+
     def _board_changed(self):
         self._update_search()
         self._update_board_widgets()
@@ -216,6 +215,8 @@ class AnalyseWidget(QWidget):
         # listen to the output and wait 0.1 seconds
         self._current_engine().listen(self._process_engine_line)
         time.sleep(0.1)
+        # reset any pv displayed
+        self._reset_pv()
         # try to start the engine
         if self._current_engine().start():
             # make sure the toggle button is toggle ON
@@ -250,11 +251,15 @@ class AnalyseWidget(QWidget):
         self.analysetoggle_button.setEnabled(self.engine_combo.count() > 0)
 
         # clear the pvs
-        self.pv1_button.setText("")
-        self.pv2_button.setText("")
-        self.pv3_button.setText("")
-        self.pv4_button.setText("")
-        self.pv5_button.setText("")
+        self._reset_pv()
+
+    def _reset_pv(self):
+        for i in self.pv_buttons:
+            i.setText("")
+
+        # make sure there are enough arrows in the board widget
+        if len(self.board_widget.arrows) < 5:
+            self.board_widget.arrows += [BoardArrow(0, 0, 0)] * (5 - len(self.board_widget.arrows))
 
     def resizeEvent(self, e):
         self.boardroot_frame.setMinimumWidth(self.boardroot_frame.height())

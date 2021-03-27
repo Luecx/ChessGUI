@@ -2,7 +2,7 @@ import math
 
 from PyQt5.QtWidgets import QWidget, QLabel, QSizePolicy, QDialog, QGridLayout, QPushButton
 from PyQt5.QtGui import QColor, QPixmap, QIcon, QColor, QBrush, QPainter, QPen, QPolygon
-from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint, QSize
+from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QPoint, QSize, QEasingCurve
 import chess
 import res
 import time
@@ -69,7 +69,7 @@ class BoardWidget(QWidget):
         def transform(x, y, r, x0, y0):
             return QPoint(x0 + math.cos(r) * x - math.sin(r) * y, y0 + math.sin(r) * x + math.cos(r) * y)
 
-        self.arrow_panel.setStyleSheet("background-color:transparent;")
+        self.arrow_panel.setStyleSheet("background-color:transparent")
         self.arrow_panel.raise_()
 
         painter = QPainter(self.arrow_panel)
@@ -90,14 +90,14 @@ class BoardWidget(QWidget):
             if arrow.width <= 0:
                 continue
 
-            arrow_head_width = arrow.width * 3
-            arrow_head_length = arrow_head_width
+            arrow_head_width = arrow.width * 3 * self.cellSize
+            arrow_head_length = arrow_head_width * 0.8
 
             x_from  , y_from = self._get_coordinate(arrow.sq_from)
             x_to    , y_to   = self._get_coordinate(arrow.sq_to)
 
             distance = math.sqrt((y_from - y_to) ** 2 + (x_from - x_to) ** 2)
-            width    = arrow.width
+            width    = arrow.width * self.cellSize
             angle    = math.atan2(y_to - y_from, x_to - x_from) - math.pi / 2
             x0 = x_from + self.cellSize // 2
             y0 = y_from + self.cellSize // 2
@@ -121,21 +121,24 @@ class BoardWidget(QWidget):
             label = QLabel(self)
             label.move(x,y)
             label.setAlignment(Qt.AlignCenter)
-            label.setStyleSheet("background-color:transparent")
+            label.setStyleSheet("background-color:transparent;")
             self.pieces.append(label)
 
     def refresh_board(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
 
-            if piece is None:
-                self.pieces[square].clear()
-                continue
+
 
             x, y  = self._get_coordinate(square)
 
             self.pieces[square].move(x, y)
             self.pieces[square].resize(self.cellSize, self.cellSize)
+
+            if piece is None:
+                self.pieces[square].clear()
+                continue
+
             self.pieces[square].setPixmap(
                 QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio,
                                                         Qt.SmoothTransformation))
@@ -169,9 +172,16 @@ class BoardWidget(QWidget):
                     self.move_from_to(move.from_square, move.to_square)
                     self.notify_listener()
                     return
+                # if there are multiple moves, select it and choose the piece next
+                if len(set(x.from_square + 64 * x.to_square for x in self.board.legal_moves if
+                           x.to_square == square)) >= 1:
+                    self.clickedAt = square
+                    self.pieces[self.clickedAt].setStyleSheet(
+                        'border: 5px solid gray; border-radius:5px; background-color:transparent;')
+                    return
 
-                # dont select the square if there is no piece on it of the correct color
-                if self.board.piece_at(square) is None or self.board.turn != self.board.piece_at(square).color:
+                # dont select a square where the is an opponent piece
+                if self.board.piece_at(square) is not None and self.board.turn != self.board.piece_at(square).color:
                     return
 
                 # get the moves from that square
@@ -195,12 +205,23 @@ class BoardWidget(QWidget):
 
                 # otherwise select the square
                 self.clickedAt = square
-                self.pieces[self.clickedAt].setStyleSheet('border: 5px solid gray; border-radius:5px; background-color:transparent;')
+                self.pieces[self.clickedAt].setStyleSheet(
+                    'border: 5px solid gray; border-radius:5px; background-color:transparent;')
                 return
             else:
+
                 self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
-                self.move_from_to(self.clickedAt, square)
-                self.notify_listener()
+                if self.clickedAt == square:
+                    self.clickedAt = None
+                    return
+
+                # check if the select square is a from or to square
+                if self.board.piece_at(self.clickedAt) is None or self.board.piece_at(self.clickedAt).color != self.board.turn:
+                    if self.move_from_to(square, self.clickedAt):
+                        self.notify_listener()
+                else:
+                    if self.move_from_to(self.clickedAt, square):
+                        self.notify_listener()
                 self.clickedAt = None
 
     def show_promotion_dialog(self):
@@ -276,14 +297,14 @@ class BoardWidget(QWidget):
             # handle promotion
         if len(available_moves) < 1:
             # no legal move
-            return
+            return False
 
         move = available_moves[0]
-        self.move_move(move)
+        return self.move_move(move)
 
     def move_move(self, move):
         if move not in self.board.legal_moves:
-            return
+            return False
 
         self.board.push(move)
 
@@ -293,13 +314,15 @@ class BoardWidget(QWidget):
         self.refresh_board()
         label = self.pieces[move.to_square]
         self.anim = QPropertyAnimation(label, b"pos")
-        self.anim.setDuration(200)
+        self.anim.setDuration(400)
         self.anim.setStartValue(QPoint(x_from, y_from))
         self.anim.setEndValue(QPoint(x_to, y_to))
+        self.anim.setEasingCurve(QEasingCurve.InOutQuart)
         self.anim.start()
         # self.anim.finished.connect(self.notify_listener)
 
         self.move_memory = []
+        return True
 
     def undo_move(self):
         if len(self.board.move_stack) > 0:

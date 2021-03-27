@@ -5,7 +5,7 @@ import res
 import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStatusBar
-from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent, QPoint
+from PyQt5.QtCore import QPropertyAnimation, Qt, QEvent, QPoint, QEasingCurve
 from PyQt5.QtGui import QCursor
 from PyQt5 import uic
 from analysewidget import AnalyseWidget
@@ -81,6 +81,7 @@ class MainWindow(QMainWindow):
             self.open_menu_anim.setEndValue(230)
         else:
             self.open_menu_anim.setEndValue(70)
+        self.open_menu_anim.setEasingCurve(QEasingCurve.InOutQuart)
 
         self.open_menu_anim.start()
 
