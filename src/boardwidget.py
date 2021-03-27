@@ -24,8 +24,6 @@ class BoardWidget(QWidget):
 
     def _config(self):
         self.cellSize  = self.width() // 8
-        self.lightCell = QColor(0xecdab9)
-        self.darkCell  = QColor(0xae8a68)
         self.board     = chess.Board()
         self.arrow_panel = QLabel(self)
         self.boardPixmap = QPixmap(":/boards/images/board.png")
@@ -40,15 +38,9 @@ class BoardWidget(QWidget):
         self.paintEvent             = lambda e : self._paint_background()
         self.arrow_panel.paintEvent = lambda e : self._paint_arrows()
 
-    def _next_color(self, color):
-        if color == self.darkCell:
-            return self.lightCell
-        else:
-            return self.darkCell
-
     def resizeEvent(self, e):
         x, y = e.size().height(), e.size().width()
-        self.cellSize = min(x, y) // 8
+        self.cellSize = min(x, y) / 8
         self.refresh_board()
         self.arrow_panel.resize(self.width(), self.height())
 
@@ -56,11 +48,11 @@ class BoardWidget(QWidget):
         return square // 8, square % 8
 
     def _get_coordinate(self, square):
-        i, j = self._get_index(square)
-        return round(j * self.cellSize), round((7-i) * self.cellSize)
+        i, j = self._get_index(chess.square_mirror(square))
+        return j * self.cellSize, i * self.cellSize
 
     def _get_square(self, x, y):
-        return x // self.cellSize + (7 - y // self.cellSize) * 8
+        return chess.square_mirror(int(y // self.cellSize * 8 + (x // self.cellSize)))
 
     def _get_color_label(self, piece):
         return 'w' if piece.color == chess.WHITE else 'b'
@@ -135,14 +127,14 @@ class BoardWidget(QWidget):
     def refresh_board(self):
         for square in chess.SQUARES:
             piece = self.board.piece_at(square)
-            x, y = self._get_coordinate(square)
-
-            self.pieces[square].move(x, y)
 
             if piece is None:
                 self.pieces[square].clear()
                 continue
 
+            x, y  = self._get_coordinate(square)
+
+            self.pieces[square].move(x, y)
             self.pieces[square].resize(self.cellSize, self.cellSize)
             self.pieces[square].setPixmap(
                 QPixmap(self._piece_path(piece)).scaled(self.cellSize, self.cellSize, Qt.KeepAspectRatio,
@@ -152,7 +144,7 @@ class BoardWidget(QWidget):
         self.piece_type_placing = piece_type
 
     def mousePressEvent(self, e):
-
+        print(self._get_square(e.x(), e.y()))
         # for placing a piece on the board
         if self.piece_type_placing is not None:
             square = self._get_square(e.x(), e.y())

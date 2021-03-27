@@ -159,7 +159,7 @@ class EngineConfigWidget(QWidget):
     def __init__(self):
         super(QWidget, self).__init__()
         self.engines = Engines()
-        self.engines.read_xml("engines.xml")
+        self.engines.read_xml(os.path.join(os.path.dirname(__file__), "engines.xml"))
         self._load_ui()
 
     def selected_engine(self):
