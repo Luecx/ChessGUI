@@ -389,13 +389,13 @@ class Engine:
                         if 'default' in line:
                             try:
                                 option['default'] = str(split[split.index('default') + 1])
-                            except:
+                            except Exception:
                                 option['default'] = ''
                     else:
                         if 'default' in line:
                             try:
                                 option['default'] = int(split[split.index('default') + 1])
-                            except:
+                            except Exception:
                                 option['default'] = ''
 
                     # reading values

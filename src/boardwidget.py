@@ -144,7 +144,6 @@ class BoardWidget(QWidget):
         self.piece_type_placing = piece_type
 
     def mousePressEvent(self, e):
-        print(self._get_square(e.x(), e.y()))
         # for placing a piece on the board
         if self.piece_type_placing is not None:
             square = self._get_square(e.x(), e.y())
@@ -195,13 +194,27 @@ class BoardWidget(QWidget):
 
                 # otherwise select the square
                 self.clickedAt = square
-                self.pieces[self.clickedAt].setStyleSheet('border: 5px solid gray; border-radius:5px; background-color:transparent;')
                 return
             else:
-                self.pieces[self.clickedAt].setStyleSheet('border: 0px; background-color:transparent;')
                 self.move_from_to(self.clickedAt, square)
                 self.notify_listener()
                 self.clickedAt = None
+
+    def mouseMoveEvent(self, e):
+        if self.clickedAt != None:
+            self.pieces[self.clickedAt].move(e.x() - self.cellSize / 2, e.y() - self.cellSize / 2)
+
+    def mouseReleaseEvent(self, e):
+        if self.clickedAt != None:
+            square = self._get_square(e.x(), e.y())
+            move = chess.Move(self.clickedAt, square)
+            if move in self.board.legal_moves:
+                self.move_from_to(move.from_square, move.to_square, anim=False)
+            else:
+                self.refresh_board()
+
+            self.notify_listener()
+            self.clickedAt = None
 
     def show_promotion_dialog(self):
         # creates a promotion dialog to select a piece and return that
@@ -265,7 +278,7 @@ class BoardWidget(QWidget):
 
         return promotionPiece
 
-    def move_from_to(self, sq_from, sq_to):
+    def move_from_to(self, sq_from, sq_to, anim=True):
         available_moves = [x for x in self.board.legal_moves if x.from_square == sq_from and x.to_square == sq_to]
 
         if len(available_moves) > 1:
@@ -279,9 +292,9 @@ class BoardWidget(QWidget):
             return
 
         move = available_moves[0]
-        self.move_move(move)
+        self.move_move(move, anim)
 
-    def move_move(self, move):
+    def move_move(self, move, should_anim=True):
         if move not in self.board.legal_moves:
             return
 
@@ -294,7 +307,10 @@ class BoardWidget(QWidget):
         label = self.pieces[move.to_square]
         self.anim = QPropertyAnimation(label, b"pos")
         self.anim.setDuration(200)
-        self.anim.setStartValue(QPoint(x_from, y_from))
+        if should_anim:
+            self.anim.setStartValue(QPoint(x_from, y_from))
+        else:
+            self.anim.setStartValue(QPoint(x_to, y_to))
         self.anim.setEndValue(QPoint(x_to, y_to))
         self.anim.start()
         # self.anim.finished.connect(self.notify_listener)

@@ -5,156 +5,29 @@
 		<proto>1</proto>
 		<options/>
 	</NewEngine2>
-	<Stockish>
-		<bin>C:/Users/aryan/Documents/cs/chess/binaries/stockfish_20090216_x64_avx2.exe</bin>
+	<Bit-Genie>
+		<bin>C:/Users/aryan/Documents/cs/engines/bg_dev.exe</bin>
 		<proto>1</proto>
 		<options>
-			<Debug>
-				<type>string</type>
-				<default/>
-				<value/>
-			</Debug>
-			<Contempt>
-				<type>spin</type>
-				<min>-100</min>
-				<max>100</max>
-				<default>24</default>
-				<value>24</value>
-			</Contempt>
-			<Analysis>
-				<type>combo</type>
-				<default/>
-				<vals>
-					<item>Off</item>
-					<item>White</item>
-					<item>Black</item>
-					<item>Both</item>
-				</vals>
-				<value/>
-			</Analysis>
-			<Threads>
-				<type>spin</type>
-				<min>1</min>
-				<max>512</max>
-				<default>1</default>
-				<value>1</value>
-			</Threads>
 			<Hash>
 				<type>spin</type>
 				<min>1</min>
-				<max>33554432</max>
+				<max>65536</max>
 				<default>16</default>
 				<value>18</value>
 			</Hash>
-			<Clear>
-				<type>button</type>
-			</Clear>
-			<Ponder>
-				<type>check</type>
-				<default/>
-				<value/>
-			</Ponder>
-			<MultiPV>
+			<Threads>
 				<type>spin</type>
 				<min>1</min>
-				<max>500</max>
+				<max>256</max>
 				<default>1</default>
 				<value>1</value>
-			</MultiPV>
-			<Skill>
-				<type>spin</type>
-				<min>0</min>
-				<max>20</max>
-				<default>20</default>
-				<value>20</value>
-			</Skill>
-			<Move>
-				<type>spin</type>
-				<min>0</min>
-				<max>5000</max>
-				<default>10</default>
-				<value>10</value>
-			</Move>
-			<Slow>
-				<type>spin</type>
-				<min>10</min>
-				<max>1000</max>
-				<default>100</default>
-				<value>100</value>
-			</Slow>
-			<nodestime>
-				<type>spin</type>
-				<min>0</min>
-				<max>10000</max>
-				<default>0</default>
-				<value>0</value>
-			</nodestime>
-			<UCI_Chess960>
-				<type>check</type>
-				<default/>
-				<value/>
-			</UCI_Chess960>
-			<UCI_AnalyseMode>
-				<type>check</type>
-				<default/>
-				<value/>
-			</UCI_AnalyseMode>
-			<UCI_LimitStrength>
-				<type>check</type>
-				<default/>
-				<value/>
-			</UCI_LimitStrength>
-			<UCI_Elo>
-				<type>spin</type>
-				<min>1350</min>
-				<max>2850</max>
-				<default>1350</default>
-				<value>1350</value>
-			</UCI_Elo>
-			<UCI_ShowWDL>
-				<type>check</type>
-				<default/>
-				<value/>
-			</UCI_ShowWDL>
+			</Threads>
 			<SyzygyPath>
 				<type>string</type>
-				<default>&lt;empty&gt;</default>
+				<default/>
 				<value/>
 			</SyzygyPath>
-			<SyzygyProbeDepth>
-				<type>spin</type>
-				<min>1</min>
-				<max>100</max>
-				<default>1</default>
-				<value>1</value>
-			</SyzygyProbeDepth>
-			<Syzygy50MoveRule>
-				<type>check</type>
-				<default/>
-				<value/>
-			</Syzygy50MoveRule>
-			<SyzygyProbeLimit>
-				<type>spin</type>
-				<min>0</min>
-				<max>7</max>
-				<default>7</default>
-				<value>7</value>
-			</SyzygyProbeLimit>
-			<Use>
-				<type>check</type>
-				<default/>
-				<value/>
-			</Use>
-			<EvalFile>
-				<type>string</type>
-				<default>nn-82215d0fd0df.nnue</default>
-				<value>nn-82215d0fd0df.nnue</value>
-			</EvalFile>
 		</options>
-	</Stockish>
-	<Bit-Genie>
-		<bin>C:/projects/Bit Genie/x64/Release/Bit-Genie.exe</bin>
-		<proto>1</proto>
-		<options/>
 	</Bit-Genie>
 </root>

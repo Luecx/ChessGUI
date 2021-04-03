@@ -1,7 +1,12 @@
 <?xml version="1.0" ?>
 <root>
-	<NewEngine1>
-		<bin>F:/OneDrive/ProgrammSpeicher/CLionProjects/Koivisto/cmake-build-release/Koivisto.exe</bin>
+	<NewEngine2>
+		<bin/>
+		<proto>1</proto>
+		<options/>
+	</NewEngine2>
+	<Bit-Genie>
+		<bin>C:/Users/aryan/Documents/cs/engines/bg_dev.exe</bin>
 		<proto>1</proto>
 		<options>
 			<Hash>
@@ -24,10 +29,5 @@
 				<value/>
 			</SyzygyPath>
 		</options>
-	</NewEngine1>
-	<NewEngine2>
-		<bin/>
-		<proto>1</proto>
-		<options/>
-	</NewEngine2>
+	</Bit-Genie>
 </root>

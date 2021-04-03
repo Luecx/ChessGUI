@@ -12,7 +12,6 @@ from analysewidget import AnalyseWidget
 from engineconfigwidget import EngineConfigWidget
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super(MainWindow, self).__init__()
         self.load_ui()
