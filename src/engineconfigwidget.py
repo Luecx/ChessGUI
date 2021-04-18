@@ -279,7 +279,6 @@ class EngineConfigWidget(QWidget):
     def _open_exe_file_dialog(self):
         dlg = QFileDialog(self)
         dlg.setFileMode(QFileDialog.AnyFile)
-        dlg.setNameFilters(["Executables (*.exe)"])
         if dlg.exec_():
             filenames = dlg.selectedFiles()
             if len(filenames) == 1:

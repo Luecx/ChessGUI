@@ -30,4 +30,14 @@
 			</SyzygyPath>
 		</options>
 	</Bit-Genie>
+	<Bit-Genie-Dev>
+		<bin>/home/aryan/Documents/elotest/bg_dev</bin>
+		<proto>1</proto>
+		<options/>
+	</Bit-Genie-Dev>
+	<NewEngine1>
+		<bin/>
+		<proto>1</proto>
+		<options/>
+	</NewEngine1>
 </root>
